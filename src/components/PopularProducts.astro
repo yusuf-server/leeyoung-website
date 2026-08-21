@@ -1,5 +1,6 @@
 ---
 import { getProducts, getProductVariations, type WooProduct } from '../lib/woocommerce';
+import { getEnv } from '../lib/env';
 
 interface Product {
   id: string;
@@ -12,6 +13,9 @@ interface Product {
   link: string;
 }
 
+// 获取环境变量（兼容 Cloudflare Pages）
+const env = getEnv(Astro.locals);
+
 // 从 WooCommerce 获取产品数据
 let wooProducts: WooProduct[] = [];
 try {
@@ -20,6 +24,7 @@ try {
     orderby: 'popularity',
     order: 'desc',
     stock_status: 'instock',
+    env,
   });
 } catch (error) {
   console.error('Failed to fetch products:', error);
@@ -70,7 +75,7 @@ const products: Product[] = await Promise.all(
     let colorsCount: number | undefined = undefined;
     if (wooProduct.type === 'variable' && wooProduct.variations.length > 0) {
       try {
-        const variations = await getProductVariations(wooProduct.id);
+        const variations = await getProductVariations(wooProduct.id, env);
         // 查找颜色属性
         const colorAttribute = variations
           .map(v => v.attributes.find(attr =>

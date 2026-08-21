@@ -1,5 +1,6 @@
 ---
 import { getProductCategories, type WooCategory } from '../lib/woocommerce';
+import { getEnv } from '../lib/env';
 
 interface Category {
   id: string;
@@ -9,12 +10,16 @@ interface Category {
   link: string;
 }
 
+// 获取环境变量（兼容 Cloudflare Pages）
+const env = getEnv(Astro.locals);
+
 // 从 WooCommerce 获取产品分类
 let wooCategories: WooCategory[] = [];
 try {
   wooCategories = await getProductCategories({
     per_page: 100,
     parent: 0, // 只获取顶级分类
+    env,
   });
 } catch (error) {
   console.error('Failed to fetch product categories:', error);

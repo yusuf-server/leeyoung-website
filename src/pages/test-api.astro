@@ -1,5 +1,6 @@
 ---
 import { getProducts } from '../lib/woocommerce';
+import { getEnv } from '../lib/env';
 
 let testResult = {
   success: false,
@@ -13,13 +14,16 @@ let testResult = {
 };
 
 try {
+  // 获取环境变量（兼容 Cloudflare Pages）
+  const env = getEnv(Astro.locals);
+
   // 检查环境变量
-  testResult.env.hasUrl = !!import.meta.env.WOOCOMMERCE_URL;
-  testResult.env.hasKey = !!import.meta.env.WOOCOMMERCE_CONSUMER_KEY;
-  testResult.env.hasSecret = !!import.meta.env.WOOCOMMERCE_CONSUMER_SECRET;
+  testResult.env.hasUrl = !!env.WOOCOMMERCE_URL;
+  testResult.env.hasKey = !!env.WOOCOMMERCE_CONSUMER_KEY;
+  testResult.env.hasSecret = !!env.WOOCOMMERCE_CONSUMER_SECRET;
 
   // 尝试获取产品
-  const products = await getProducts({ per_page: 5 });
+  const products = await getProducts({ per_page: 5, env });
   testResult.success = true;
   testResult.products = products;
 } catch (error: any) {

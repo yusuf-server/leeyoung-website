@@ -3,6 +3,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { getProducts, getProductCategories, getProductTags, getProductVariations, type WooProduct, type WooCategory, type WooTag } from '../lib/woocommerce';
+import { getEnv } from '../lib/env';
+
+// 获取环境变量（兼容 Cloudflare Pages）
+const env = getEnv(Astro.locals);
 
 // 从 URL 获取分类参数
 const categorySlug = Astro.url.searchParams.get('category');
@@ -26,11 +30,13 @@ try {
   categories = await getProductCategories({
     per_page: 100,
     parent: 0, // 只获取顶级分类
+    env,
   });
 
   // 获取所有产品标签（用于 Material 过滤）
   tags = await getProductTags({
     per_page: 100,
+    env,
   });
 
   // 根据分类 slug 查找分类 ID
@@ -48,6 +54,7 @@ try {
     page: 1,
     orderby: 'date',
     order: 'desc',
+    env,
   };
 
   // 如果有分类 ID，添加到查询参数
@@ -62,7 +69,7 @@ try {
   for (const product of products) {
     if (product.type === 'variable') {
       try {
-        const variations = await getProductVariations(product.id);
+        const variations = await getProductVariations(product.id, env);
         productVariations[product.id] = variations;
       } catch (e) {
         console.error(`Failed to fetch variations for product ${product.id}:`, e);
@@ -72,11 +79,11 @@ try {
   }
 
   // 获取所有产品以计算总数（不应用分类过滤，获取全部产品数量）
-  const allProductsForCount = await getProducts({ per_page: 100 });
+  const allProductsForCount = await getProducts({ per_page: 100, env });
   allProductsCount = allProductsForCount.length;
 
   // 获取当前分类的产品以计算最高价格和分页
-  const allProductsParams: any = { per_page: 100 };
+  const allProductsParams: any = { per_page: 100, env };
   if (categoryId) {
     allProductsParams.category = categoryId;
   }

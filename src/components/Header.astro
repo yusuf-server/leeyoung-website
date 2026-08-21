@@ -1,5 +1,6 @@
 ---
 import { getProductCategories, getProducts, type WooCategory, type WooProduct } from '../lib/woocommerce';
+import { getEnv } from '../lib/env';
 
 const navItems = [
   { name: 'Home', href: '/' },
@@ -9,6 +10,9 @@ const navItems = [
   { name: 'Contact', href: '/contact' },
 ];
 
+// 获取环境变量（兼容 Cloudflare Pages）
+const env = getEnv(Astro.locals);
+
 // 从 WooCommerce 获取所有产品（不是分类）
 let productCategories = [];
 try {
@@ -17,6 +21,7 @@ try {
     orderby: 'menu_order',
     order: 'asc',
     stock_status: 'instock',
+    env,
   });
 
   productCategories = products.map(product => ({

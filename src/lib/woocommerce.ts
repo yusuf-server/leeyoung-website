@@ -1,21 +1,50 @@
-const WOOCOMMERCE_URL = import.meta.env.WOOCOMMERCE_URL;
-const CONSUMER_KEY = import.meta.env.WOOCOMMERCE_CONSUMER_KEY;
-const CONSUMER_SECRET = import.meta.env.WOOCOMMERCE_CONSUMER_SECRET;
+import type { Env } from './env';
 
-if (!WOOCOMMERCE_URL || !CONSUMER_KEY || !CONSUMER_SECRET) {
-  throw new Error('Missing WooCommerce configuration in .env file');
+// Environment variables - will be lazily initialized
+let cachedEnv: { url: string; key: string; secret: string } | null = null;
+
+/**
+ * Get WooCommerce credentials from environment
+ * Works with both local development (import.meta.env) and Cloudflare Pages (passed env)
+ */
+function getWooCommerceEnv(env?: Env): { url: string; key: string; secret: string } {
+  // If env is passed (Cloudflare Pages), use it
+  if (env) {
+    return {
+      url: env.WOOCOMMERCE_URL,
+      key: env.WOOCOMMERCE_CONSUMER_KEY,
+      secret: env.WOOCOMMERCE_CONSUMER_SECRET,
+    };
+  }
+
+  // For local development, try import.meta.env
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return {
+      url: import.meta.env.WOOCOMMERCE_URL || '',
+      key: import.meta.env.WOOCOMMERCE_CONSUMER_KEY || '',
+      secret: import.meta.env.WOOCOMMERCE_CONSUMER_SECRET || '',
+    };
+  }
+
+  throw new Error('WooCommerce environment variables not available');
 }
 
 /**
  * Helper function to build WooCommerce API URL with authentication
  * Uses URL parameters instead of Basic Auth for better compatibility
  */
-export function buildWooCommerceUrl(endpoint: string, additionalParams?: Record<string, string>): string {
-  const url = new URL(`${WOOCOMMERCE_URL}/wp-json/wc/v3${endpoint}`);
+export function buildWooCommerceUrl(endpoint: string, additionalParams?: Record<string, string>, env?: Env): string {
+  const credentials = getWooCommerceEnv(env);
+
+  if (!credentials.url || !credentials.key || !credentials.secret) {
+    throw new Error('Missing WooCommerce configuration');
+  }
+
+  const url = new URL(`${credentials.url}/wp-json/wc/v3${endpoint}`);
 
   // Add authentication
-  url.searchParams.append('consumer_key', CONSUMER_KEY);
-  url.searchParams.append('consumer_secret', CONSUMER_SECRET);
+  url.searchParams.append('consumer_key', credentials.key);
+  url.searchParams.append('consumer_secret', credentials.secret);
 
   // Add additional parameters
   if (additionalParams) {
@@ -30,9 +59,10 @@ export function buildWooCommerceUrl(endpoint: string, additionalParams?: Record<
 // WooCommerce REST API 基础请求函数
 export async function wooCommerceRequest<T = any>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  env?: Env
 ): Promise<T> {
-  const url = buildWooCommerceUrl(endpoint);
+  const url = buildWooCommerceUrl(endpoint, undefined, env);
 
   const response = await fetch(url, {
     ...options,
@@ -68,64 +98,69 @@ export async function getProducts(params?: {
   attribute?: string;
   attribute_term?: string;
   stock_status?: 'instock' | 'outofstock' | 'onbackorder';
+  env?: Env;
 }) {
-  const queryParams = new URLSearchParams();
+  const { env, ...queryParams } = params || {};
+  const urlParams = new URLSearchParams();
 
-  if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-  if (params?.page) queryParams.append('page', params.page.toString());
-  if (params?.category) queryParams.append('category', params.category);
-  if (params?.tag) queryParams.append('tag', params.tag);
-  if (params?.featured !== undefined) queryParams.append('featured', params.featured.toString());
-  if (params?.on_sale !== undefined) queryParams.append('on_sale', params.on_sale.toString());
-  if (params?.orderby) queryParams.append('orderby', params.orderby);
-  if (params?.order) queryParams.append('order', params.order);
-  if (params?.min_price) queryParams.append('min_price', params.min_price);
-  if (params?.max_price) queryParams.append('max_price', params.max_price);
-  if (params?.attribute) queryParams.append('attribute', params.attribute);
-  if (params?.attribute_term) queryParams.append('attribute_term', params.attribute_term);
-  if (params?.stock_status) queryParams.append('stock_status', params.stock_status);
+  if (queryParams?.per_page) urlParams.append('per_page', queryParams.per_page.toString());
+  if (queryParams?.page) urlParams.append('page', queryParams.page.toString());
+  if (queryParams?.category) urlParams.append('category', queryParams.category);
+  if (queryParams?.tag) urlParams.append('tag', queryParams.tag);
+  if (queryParams?.featured !== undefined) urlParams.append('featured', queryParams.featured.toString());
+  if (queryParams?.on_sale !== undefined) urlParams.append('on_sale', queryParams.on_sale.toString());
+  if (queryParams?.orderby) urlParams.append('orderby', queryParams.orderby);
+  if (queryParams?.order) urlParams.append('order', queryParams.order);
+  if (queryParams?.min_price) urlParams.append('min_price', queryParams.min_price);
+  if (queryParams?.max_price) urlParams.append('max_price', queryParams.max_price);
+  if (queryParams?.attribute) urlParams.append('attribute', queryParams.attribute);
+  if (queryParams?.attribute_term) urlParams.append('attribute_term', queryParams.attribute_term);
+  if (queryParams?.stock_status) urlParams.append('stock_status', queryParams.stock_status);
 
-  const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
-  return wooCommerceRequest(`/products${query}`);
+  const query = urlParams.toString() ? `?${urlParams.toString()}` : '';
+  return wooCommerceRequest(`/products${query}`, {}, env);
 }
 
 // 获取单个产品详情
-export async function getProduct(id: number) {
-  return wooCommerceRequest(`/products/${id}`);
+export async function getProduct(id: number, env?: Env) {
+  return wooCommerceRequest(`/products/${id}`, {}, env);
 }
 
 // 获取推荐产品（特色产品）
-export async function getFeaturedProducts(limit: number = 8) {
+export async function getFeaturedProducts(limit: number = 8, env?: Env) {
   return getProducts({
     featured: true,
     per_page: limit,
     orderby: 'date',
     order: 'desc',
+    env,
   });
 }
 
 // 获取热销产品
-export async function getBestSellingProducts(limit: number = 8) {
+export async function getBestSellingProducts(limit: number = 8, env?: Env) {
   return getProducts({
     per_page: limit,
     orderby: 'popularity',
     order: 'desc',
+    env,
   });
 }
 
 // 获取促销产品
-export async function getOnSaleProducts(limit: number = 8) {
+export async function getOnSaleProducts(limit: number = 8, env?: Env) {
   return getProducts({
     on_sale: true,
     per_page: limit,
     orderby: 'date',
     order: 'desc',
+    env,
   });
 }
 
 // 获取相关产品（需要在产品详情页使用）
-export async function getRelatedProducts(productId: number, limit: number = 4) {
-  const product = await getProduct(productId);
+export async function getRelatedProducts(productId: number, limit: number = 4, env?: Env) {
+  const product = await getProduct(productId, env);
 
   // 根据分类获取相关产品
   if (product.categories && product.categories.length > 0) {
@@ -133,6 +168,7 @@ export async function getRelatedProducts(productId: number, limit: number = 4) {
     const products = await getProducts({
       category: categoryId.toString(),
       per_page: limit + 1,
+      env,
     });
 
     // 排除当前产品
@@ -148,43 +184,47 @@ export async function getRelatedProducts(productId: number, limit: number = 4) {
 export async function getProductCategories(params?: {
   per_page?: number;
   parent?: number;
+  env?: Env;
 }) {
-  const queryParams = new URLSearchParams();
+  const { env, ...queryParams } = params || {};
+  const urlParams = new URLSearchParams();
 
-  if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-  if (params?.parent !== undefined) queryParams.append('parent', params.parent.toString());
+  if (queryParams?.per_page) urlParams.append('per_page', queryParams.per_page.toString());
+  if (queryParams?.parent !== undefined) urlParams.append('parent', queryParams.parent.toString());
 
-  const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
-  return wooCommerceRequest(`/products/categories${query}`);
+  const query = urlParams.toString() ? `?${urlParams.toString()}` : '';
+  return wooCommerceRequest(`/products/categories${query}`, {}, env);
 }
 
 // 获取单个分类
-export async function getProductCategory(id: number) {
-  return wooCommerceRequest(`/products/categories/${id}`);
+export async function getProductCategory(id: number, env?: Env) {
+  return wooCommerceRequest(`/products/categories/${id}`, {}, env);
 }
 
 // 获取所有产品标签
 export async function getProductTags(params?: {
   per_page?: number;
   search?: string;
+  env?: Env;
 }) {
-  const queryParams = new URLSearchParams();
+  const { env, ...queryParams } = params || {};
+  const urlParams = new URLSearchParams();
 
-  if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-  if (params?.search) queryParams.append('search', params.search);
+  if (queryParams?.per_page) urlParams.append('per_page', queryParams.per_page.toString());
+  if (queryParams?.search) urlParams.append('search', queryParams.search);
 
-  const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
-  return wooCommerceRequest(`/products/tags${query}`);
+  const query = urlParams.toString() ? `?${urlParams.toString()}` : '';
+  return wooCommerceRequest(`/products/tags${query}`, {}, env);
 }
 
 // 获取产品属性
-export async function getProductAttributes() {
-  return wooCommerceRequest('/products/attributes');
+export async function getProductAttributes(env?: Env) {
+  return wooCommerceRequest('/products/attributes', {}, env);
 }
 
 // 获取产品属性项
-export async function getProductAttributeTerms(attributeId: number) {
-  return wooCommerceRequest(`/products/attributes/${attributeId}/terms`);
+export async function getProductAttributeTerms(attributeId: number, env?: Env) {
+  return wooCommerceRequest(`/products/attributes/${attributeId}/terms`, {}, env);
 }
 
 // 评论相关接口
@@ -195,22 +235,24 @@ export async function getProductReviews(productId: number, params?: {
   page?: number;
   order?: 'asc' | 'desc';
   orderby?: 'date' | 'rating';
+  env?: Env;
 }) {
-  const queryParams = new URLSearchParams();
-  queryParams.append('product', productId.toString());
+  const { env, ...queryParams } = params || {};
+  const urlParams = new URLSearchParams();
+  urlParams.append('product', productId.toString());
 
-  if (params?.per_page) queryParams.append('per_page', params.per_page.toString());
-  if (params?.page) queryParams.append('page', params.page.toString());
-  if (params?.order) queryParams.append('order', params.order);
-  if (params?.orderby) queryParams.append('orderby', params.orderby);
+  if (queryParams?.per_page) urlParams.append('per_page', queryParams.per_page.toString());
+  if (queryParams?.page) urlParams.append('page', queryParams.page.toString());
+  if (queryParams?.order) urlParams.append('order', queryParams.order);
+  if (queryParams?.orderby) urlParams.append('orderby', queryParams.orderby);
 
-  const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
-  return wooCommerceRequest(`/products/reviews${query}`);
+  const query = urlParams.toString() ? `?${urlParams.toString()}` : '';
+  return wooCommerceRequest(`/products/reviews${query}`, {}, env);
 }
 
 // 获取产品变体
-export async function getProductVariations(productId: number): Promise<WooVariation[]> {
-  return wooCommerceRequest(`/products/${productId}/variations?per_page=100`);
+export async function getProductVariations(productId: number, env?: Env): Promise<WooVariation[]> {
+  return wooCommerceRequest(`/products/${productId}/variations?per_page=100`, {}, env);
 }
 
 // 创建产品评论
@@ -220,11 +262,11 @@ export async function createProductReview(data: {
   reviewer: string;
   reviewer_email: string;
   rating: number;
-}) {
+}, env?: Env) {
   return wooCommerceRequest('/products/reviews', {
     method: 'POST',
     body: JSON.stringify(data),
-  });
+  }, env);
 }
 
 // TypeScript 类型定义

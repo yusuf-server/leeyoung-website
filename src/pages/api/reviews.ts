@@ -1,12 +1,15 @@
 import type { APIRoute } from 'astro';
 import { createProductReview } from '../../lib/woocommerce';
+import { getEnv } from '../../lib/env';
 
 export const prerender = false;
 
-const WOOCOMMERCE_URL = import.meta.env.WOOCOMMERCE_URL;
-
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
   try {
+    // 获取环境变量（兼容 Cloudflare Pages）
+    const env = getEnv(locals);
+    const WOOCOMMERCE_URL = env.WOOCOMMERCE_URL;
+
     // 检查用户是否登录
     const sessionToken = cookies.get('woo_session')?.value;
 
@@ -120,7 +123,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       reviewer: sessionData.username,
       reviewer_email: sessionData.email || `${sessionData.username}@example.com`,
       rating: parseInt(data.rating),
-    });
+    }, env);
 
     console.log('Review created:', review);
 

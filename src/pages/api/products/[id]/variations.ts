@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
 import { getProductVariations } from '../../../../lib/woocommerce';
+import { getEnv } from '../../../../lib/env';
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, locals }) => {
   try {
+    // 获取环境变量（兼容 Cloudflare Pages）
+    const env = getEnv(locals);
+
     const productId = parseInt(params.id || '0');
 
     if (!productId) {
@@ -17,7 +21,7 @@ export const GET: APIRoute = async ({ params }) => {
       );
     }
 
-    const variations = await getProductVariations(productId);
+    const variations = await getProductVariations(productId, env);
 
     return new Response(JSON.stringify(variations), {
       status: 200,

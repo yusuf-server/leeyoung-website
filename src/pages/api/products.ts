@@ -1,14 +1,19 @@
 import type { APIRoute } from 'astro';
 import { getProducts, getProductCategories } from '../../lib/woocommerce';
+import { getEnv } from '../../lib/env';
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   try {
+    // 获取环境变量（兼容 Cloudflare Pages）
+    const env = getEnv(locals);
+
     const searchParams = url.searchParams;
 
     // 获取查询参数
     const params: any = {
       per_page: parseInt(searchParams.get('per_page') || '12'),
       page: parseInt(searchParams.get('page') || '1'),
+      env,
     };
 
     // 分类筛选

@@ -5,6 +5,7 @@ import Footer from '../../components/Footer.astro';
 import AdvantagesBar from '../../components/AdvantagesBar.astro';
 import ProductFAQ from '../../components/ProductFAQ.astro';
 import { getProducts, getProductReviews, getProductVariations, type WooProduct, type WooVariation, type UsageRating, type FeatureCard, type WooReview } from '../../lib/woocommerce';
+import { getEnv } from '../../lib/env';
 
 // 图片优化函数 - 使用适当尺寸的缩略图
 function optimizeImageUrl(url: string, size: 'thumbnail' | 'medium' | 'large' = 'large'): string {
@@ -35,6 +36,9 @@ function optimizeImageUrl(url: string, size: 'thumbnail' | 'medium' | 'large' = 
 // 启用服务器端渲染
 export const prerender = false;
 
+// 获取环境变量（兼容 Cloudflare Pages）
+const env = getEnv(Astro.locals);
+
 // 获取动态路由参数
 const { slug } = Astro.params;
 
@@ -46,7 +50,7 @@ let variations: WooVariation[] = [];
 
 try {
   // 从 WooCommerce 获取所有产品
-  const products = await getProducts({ per_page: 100 });
+  const products = await getProducts({ per_page: 100, env });
 
   // 根据 slug 查找产品
   product = products.find((p: WooProduct) => p.slug === slug) || null;
@@ -57,7 +61,7 @@ try {
     // 如果是可变产品，获取变体
     if (product.type === 'variable' && product.variations && product.variations.length > 0) {
       try {
-        variations = await getProductVariations(product.id);
+        variations = await getProductVariations(product.id, env);
         console.log('Fetched variations:', variations.length);
       } catch (e) {
         console.error('Failed to fetch variations:', e);
@@ -69,7 +73,8 @@ try {
       reviews = await getProductReviews(product.id, {
         per_page: 50,
         orderby: 'date',
-        order: 'desc'
+        order: 'desc',
+        env,
       });
 
       console.log('Fetched reviews:', reviews.length);
