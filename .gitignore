@@ -26,3 +26,11 @@ public/videos/
 视频存储/
 *.mp4
 *.mov
+
+# documentation files
+*.md
+*.php
+
+# backup and claude files
+backup-solution-A/
+.claude/
