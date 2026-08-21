@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getEnv, validateEnv } from '../../lib/env';
-import { getProducts } from '../../lib/woocommerce';
+import { getEnv, validateEnv, buildWooCommerceApiUrl } from '../../lib/env';
 
 export const prerender = false;
 
@@ -28,25 +27,42 @@ export const GET: APIRoute = async ({ locals }) => {
         valid: validation.valid,
         missing: validation.missing,
       },
-      realApiTest: null as any,
+      directFetchTest: null as any,
     };
 
-    // 使用真实的 getProducts 函数测试
+    // 直接测试fetch，捕获原始响应
     if (validation.valid) {
       try {
-        const products = await getProducts({ per_page: 2, env });
+        const url = buildWooCommerceApiUrl(env, '/products', { per_page: '1' });
 
-        result.realApiTest = {
-          success: true,
-          productsCount: products.length,
-          firstProduct: products[0] ? {
-            id: products[0].id,
-            name: products[0].name,
-            price: products[0].price,
-          } : null,
+        const response = await fetch(url, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (compatible; LEEYOUNG-Website/1.0)',
+          },
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        const responseText = await response.text();
+
+        result.directFetchTest = {
+          url: url.replace(/consumer_(key|secret)=[^&]+/g, 'consumer_$1=***'), // 隐藏密钥
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          contentType,
+          isJson: contentType.includes('application/json'),
+          responseLength: responseText.length,
+          responsePreview: responseText.substring(0, 500),
+          headers: {
+            'content-type': response.headers.get('content-type'),
+            'server': response.headers.get('server'),
+            'cf-ray': response.headers.get('cf-ray'),
+          },
         };
       } catch (error: any) {
-        result.realApiTest = {
+        result.directFetchTest = {
           success: false,
           error: error.message,
           stack: error.stack?.substring(0, 500),
