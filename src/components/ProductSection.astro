@@ -1,0 +1,198 @@
+---
+interface Product {
+  id: string;
+  title: string;
+  image: string;
+  description: string;
+  link: string;
+}
+
+interface Props {
+  products?: Product[];
+}
+
+const { products = [] } = Astro.props;
+
+// 默认产品分类
+const defaultCategories = [
+  {
+    id: '1',
+    title: 'Hijab系列',
+    image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800&h=1000&fit=crop',
+    description: '精选优质面料，舒适透气',
+    link: '#hijab'
+  },
+  {
+    id: '2',
+    title: 'Abaya系列',
+    image: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&h=1000&fit=crop',
+    description: '优雅设计，展现气质',
+    link: '#abaya'
+  },
+  {
+    id: '3',
+    title: '配饰系列',
+    image: 'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=800&h=1000&fit=crop',
+    description: '精致细节，完美搭配',
+    link: '#accessories'
+  },
+  {
+    id: '4',
+    title: '新品上市',
+    image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&h=1000&fit=crop',
+    description: '最新款式，引领潮流',
+    link: '#new'
+  },
+];
+
+const displayProducts = products.length > 0 ? products : defaultCategories;
+---
+
+<section class="products" id="products">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-subtitle">探索我们的</p>
+      <h2 class="section-title">产品系列</h2>
+    </div>
+
+    <div class="products-grid">
+      {displayProducts.map((product) => (
+        <a href={product.link} class="product-card">
+          <div class="product-image">
+            <img src={product.image} alt={product.title} />
+            <div class="product-overlay">
+              <span class="product-cta">查看详情</span>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3 class="product-title">{product.title}</h3>
+            <p class="product-description">{product.description}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .products {
+    padding: var(--spacing-xl) 0;
+    background: var(--color-bg);
+  }
+
+  .container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .section-subtitle {
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: var(--color-primary);
+    letter-spacing: -0.02em;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  .product-card {
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 0;
+    transition: transform 0.3s;
+  }
+
+  .product-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .product-image {
+    position: relative;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+  }
+
+  .product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+  }
+
+  .product-card:hover .product-image img {
+    transform: scale(1.05);
+  }
+
+  .product-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .product-card:hover .product-overlay {
+    opacity: 1;
+  }
+
+  .product-cta {
+    color: var(--color-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 1rem 2rem;
+    border: 2px solid var(--color-secondary);
+    transition: all 0.3s;
+  }
+
+  .product-cta:hover {
+    background: var(--color-secondary);
+    color: var(--color-primary);
+  }
+
+  .product-info {
+    padding: var(--spacing-md);
+  }
+
+  .product-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-primary);
+  }
+
+  .product-description {
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .products-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

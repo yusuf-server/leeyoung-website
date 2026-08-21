@@ -1,0 +1,244 @@
+---
+interface Advantage {
+  icon: string;
+  title: string;
+  subtitle: string;
+}
+
+const advantages: Advantage[] = [
+  {
+    icon: 'shield',
+    title: 'LIFETIME WARRANTY',
+    subtitle: 'Quality Guaranteed'
+  },
+  {
+    icon: 'handmade',
+    title: 'HANDCRAFTED',
+    subtitle: 'Premium Production'
+  },
+  {
+    icon: 'flag',
+    title: 'MADE IN USA',
+    subtitle: 'Supporting Local Business'
+  },
+  {
+    icon: 'experience',
+    title: 'OVER 25 YEARS',
+    subtitle: 'Industry Experience'
+  },
+];
+---
+
+<section class="advantages-bar">
+  <div class="container">
+    <div class="advantages-grid">
+      {advantages.map((advantage, index) => (
+        <div class="advantage-item" data-advantage={index}>
+          <div class="advantage-icon">
+            {advantage.icon === 'shield' && (
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
+            )}
+            {advantage.icon === 'handmade' && (
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+                <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
+                <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+                <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+              </svg>
+            )}
+            {advantage.icon === 'flag' && (
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                <path d="M2 12h20"/>
+              </svg>
+            )}
+            {advantage.icon === 'experience' && (
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 2v20M2 12h20"/>
+                <circle cx="12" cy="12" r="4"/>
+              </svg>
+            )}
+          </div>
+          <div class="advantage-content">
+            <h3 class="advantage-title">{advantage.title}</h3>
+            <p class="advantage-subtitle">{advantage.subtitle}</p>
+          </div>
+        </div>
+      ))}
+      <div class="spacer" style="flex: 0 0 0; width: 0;"></div>
+    </div>
+    <div class="divider"></div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from '../lib/gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  // AdvantagesBar 动画
+  gsap.utils.toArray('[data-advantage]').forEach((item: any, index) => {
+    gsap.from(item, {
+      scrollTrigger: {
+        trigger: '.advantages-bar',
+        start: 'top 85%',
+        toggleActions: 'play none none reverse',
+      },
+      y: 30,
+      opacity: 0,
+      duration: 0.6,
+      delay: index * 0.1,
+      ease: 'power2.out',
+    });
+  });
+
+  // 分隔线动画
+  gsap.from('.advantages-bar .divider', {
+    scrollTrigger: {
+      trigger: '.advantages-bar',
+      start: 'top 85%',
+      toggleActions: 'play none none reverse',
+    },
+    scaleX: 0,
+    duration: 0.8,
+    delay: 0.5,
+    ease: 'power2.out',
+  });
+</script>
+
+<style>
+  .advantages-bar {
+    position: relative;
+    background: #000;
+    padding: 2.5rem 0;
+    z-index: 5;
+    
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+  }
+
+  .advantages-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+    transform-origin: left;
+  }
+
+  .advantage-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .advantage-icon {
+    flex-shrink: 0;
+    color: var(--color-secondary);
+    padding-top: 0.25rem;
+  }
+
+  .advantage-icon svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .advantage-content {
+    flex: 1;
+  }
+
+  .advantage-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-secondary);
+    margin-bottom: 0.375rem;
+    line-height: 1.4;
+  }
+
+  .advantage-subtitle {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+
+  /* 响应式 */
+  @media (max-width: 1024px) {
+    .advantages-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .advantages-bar {
+      padding: 2rem 0;
+    }
+
+    .container {
+      padding: 0 1rem;
+    }
+
+    .advantages-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .spacer {
+      display: none;
+    }
+
+    .advantage-item {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.75rem;
+    }
+
+    .advantage-icon {
+      padding-top: 0;
+    }
+
+    .advantage-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .advantage-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .advantage-title {
+      font-size: 0.7rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .advantage-subtitle {
+      font-size: 0.65rem;
+    }
+
+    .divider {
+      margin: 0 1rem;
+      display:none;
+    }
+  }
+</style>

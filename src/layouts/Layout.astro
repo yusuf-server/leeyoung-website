@@ -1,0 +1,58 @@
+---
+import PixelScripts from '../components/PixelScripts.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = '使用Astro和WordPress构建的网站' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+
+    <!-- Pixel Tracking Scripts -->
+    <PixelScripts />
+
+    <style>
+      :root {
+        --accent: #2563eb;
+        --accent-dark: #1e40af;
+        --gray: #6b7280;
+        --gray-light: #f3f4f6;
+        --gray-dark: #1f2937;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        font-family: system-ui, sans-serif;
+        background: #ffffff;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

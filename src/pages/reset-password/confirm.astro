@@ -1,0 +1,255 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// 从 URL 获取重置参数
+const { searchParams } = Astro.url;
+const key = searchParams.get('key');
+const login = searchParams.get('login');
+
+// 如果没有参数，重定向到重置密码页面
+if (!key || !login) {
+  return Astro.redirect('/reset-password');
+}
+---
+
+<Layout title="设置新密码">
+  <div class="reset-container">
+    <div class="reset-card">
+      <h1>设置新密码</h1>
+      <p class="subtitle">为账户 <strong>{login}</strong> 设置新密码</p>
+
+      <form id="resetForm">
+        <input type="hidden" id="key" name="key" value={key} />
+        <input type="hidden" id="login" name="login" value={login} />
+
+        <div class="form-group">
+          <label for="password">新密码</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            minlength="8"
+            placeholder="至少8个字符"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">确认新密码</label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            required
+            minlength="8"
+            placeholder="再次输入密码"
+          />
+        </div>
+
+        <button type="submit" id="submitBtn">
+          重置密码
+        </button>
+
+        <div id="message" class="message"></div>
+      </form>
+
+      <a href="/account/login" class="back-link">返回登录</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .reset-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .reset-card {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #1a202c;
+  }
+
+  .subtitle {
+    color: #718096;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+  }
+
+  .subtitle strong {
+    color: #2d3748;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #2d3748;
+  }
+
+  input[type="password"] {
+    width: 100%;
+    padding: 0.875rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  input[type="password"]:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  button {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .message {
+    margin-top: 1rem;
+    padding: 0.875rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: none;
+  }
+
+  .message.show {
+    display: block;
+  }
+
+  .message.success {
+    background: #c6f6d5;
+    color: #22543d;
+    border: 1px solid #9ae6b4;
+  }
+
+  .message.error {
+    background: #fed7d7;
+    color: #742a2a;
+    border: 1px solid #fc8181;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    color: #667eea;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .reset-card {
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  const form = document.getElementById('resetForm') as HTMLFormElement;
+  const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+  const message = document.getElementById('message') as HTMLDivElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const password = (document.getElementById('password') as HTMLInputElement).value;
+    const confirmPassword = (document.getElementById('confirmPassword') as HTMLInputElement).value;
+    const key = (document.getElementById('key') as HTMLInputElement).value;
+    const login = (document.getElementById('login') as HTMLInputElement).value;
+
+    // 验证密码匹配
+    if (password !== confirmPassword) {
+      message.textContent = '两次输入的密码不一致';
+      message.classList.add('show', 'error');
+      message.classList.remove('success');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '重置中...';
+    message.classList.remove('show', 'success', 'error');
+
+    try {
+      const response = await fetch('/api/auth/reset-password/confirm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          key,
+          login,
+          password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.textContent = '密码重置成功！3秒后跳转到登录页面...';
+        message.classList.add('show', 'success');
+        form.reset();
+
+        setTimeout(() => {
+          window.location.href = '/account/login';
+        }, 3000);
+      } else {
+        message.textContent = data.error || '重置失败，请重试或重新申请重置链接';
+        message.classList.add('show', 'error');
+      }
+    } catch (error) {
+      message.textContent = '网络错误，请稍后重试';
+      message.classList.add('show', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '重置密码';
+    }
+  });
+</script>
+</Layout>

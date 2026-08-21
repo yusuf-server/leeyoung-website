@@ -1,0 +1,485 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Track Order - LEEYOUNG" description="Track your order status">
+  <Header />
+
+  <main class="track-page">
+    <div class="track-container">
+      <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span>/</span>
+        <span>Track Order</span>
+      </nav>
+
+      <h1 class="track-title">Track Your Order</h1>
+      <p class="track-subtitle">Enter your tracking number to check the status of your shipment</p>
+
+      <div class="track-form-container">
+        <form class="track-form" id="trackForm">
+          <div class="form-group">
+            <label for="trackingNumber">Tracking Number</label>
+            <input
+              type="text"
+              id="trackingNumber"
+              name="trackingNumber"
+              placeholder="Enter your tracking number"
+              required
+            />
+            <p class="form-hint">You can find your tracking number in the shipping confirmation email</p>
+          </div>
+
+          <button type="submit" class="btn-track">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            Track Order
+          </button>
+        </form>
+
+        <div id="trackResult" class="track-result" style="display: none;">
+          <div class="result-message"></div>
+        </div>
+      </div>
+
+      <div class="track-info">
+        <h2>Tracking Information</h2>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="1" y="3" width="15" height="13"></rect>
+                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                <circle cx="18.5" cy="18.5" r="2.5"></circle>
+              </svg>
+            </div>
+            <h3>Standard Shipping</h3>
+            <p>Delivery within 1-3 business days to the contiguous 48 U.S. states</p>
+          </div>
+
+          <div class="info-card">
+            <div class="info-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+            </div>
+            <h3>Need Help?</h3>
+            <p>Contact us at <a href="mailto:customerservice@leeyoungshop.com">customerservice@leeyoungshop.com</a> for assistance</p>
+          </div>
+
+          <div class="info-card">
+            <div class="info-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <h3>Processing Time</h3>
+            <p>Orders are processed within 1-3 business days before shipping</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-section">
+        <h2>Frequently Asked Questions</h2>
+
+        <div class="faq-item">
+          <h3>When will I receive my tracking number?</h3>
+          <p>You will receive a tracking number via email within 1-3 business days after your order is placed. Please check your spam folder if you don't see it in your inbox.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>My tracking shows "delivered" but I haven't received my package</h3>
+          <p>Please check with your neighbors, building management, or contact your local post office or carrier first. If you still can't locate your package, contact us at <a href="mailto:customerservice@leeyoungshop.com">customerservice@leeyoungshop.com</a>.</p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Can I change my shipping address after placing an order?</h3>
+          <p>Please contact us immediately at <a href="mailto:customerservice@leeyoungshop.com">customerservice@leeyoungshop.com</a> if you need to change your address. We can only modify the address if the order hasn't been shipped yet.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('trackForm') as HTMLFormElement;
+  const resultDiv = document.getElementById('trackResult') as HTMLDivElement;
+  const resultMessage = resultDiv.querySelector('.result-message') as HTMLDivElement;
+  const trackingInput = document.getElementById('trackingNumber') as HTMLInputElement;
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const trackingNumber = trackingInput.value.trim();
+
+    if (!trackingNumber) {
+      return;
+    }
+
+    // 显示结果区域
+    resultDiv.style.display = 'block';
+
+    // 暂时显示提示信息（实际功能需要后端支持）
+    resultMessage.innerHTML = `
+      <div class="result-info">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <h3>Tracking Number: ${trackingNumber}</h3>
+        <p>To track your order, please use one of the following carrier websites:</p>
+        <div class="carrier-links">
+          <a href="https://www.usps.com/track/" target="_blank" rel="noopener noreferrer" class="carrier-link">
+            <span>USPS Tracking</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+          <a href="https://www.fedex.com/fedextrack/" target="_blank" rel="noopener noreferrer" class="carrier-link">
+            <span>FedEx Tracking</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+          <a href="https://www.ups.com/track" target="_blank" rel="noopener noreferrer" class="carrier-link">
+            <span>UPS Tracking</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+        <p class="note">Copy your tracking number and paste it on the carrier's website to see real-time updates.</p>
+      </div>
+    `;
+
+    // 滚动到结果区域
+    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+</script>
+
+<style>
+  .track-page {
+    min-height: 100vh;
+    background: #fafafa;
+    padding: 100px 0 4rem;
+  }
+
+  .track-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .breadcrumb a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .breadcrumb a:hover {
+    color: #000;
+  }
+
+  .breadcrumb span {
+    color: #999;
+  }
+
+  .track-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    letter-spacing: -0.02em;
+  }
+
+  .track-subtitle {
+    font-size: 1rem;
+    color: #666;
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .track-form-container {
+    background: #fff;
+    padding: 3rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 3rem;
+  }
+
+  .track-form {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 1rem;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #d4af37;
+  }
+
+  .form-hint {
+    font-size: 0.85rem;
+    color: #999;
+    margin-top: 0.5rem;
+  }
+
+  .btn-track {
+    width: 100%;
+    padding: 1rem;
+    background: #d4af37;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-track:hover {
+    background: #c49d2e;
+    transform: translateY(-2px);
+  }
+
+  .track-result {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: #f8f8f8;
+    border-radius: 8px;
+  }
+
+  .result-info {
+    text-align: center;
+  }
+
+  .result-info svg:first-child {
+    color: #d4af37;
+    margin-bottom: 1rem;
+  }
+
+  .result-info h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 1rem;
+  }
+
+  .result-info p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+
+  .carrier-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .carrier-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: #fff;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #000;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .carrier-link:hover {
+    border-color: #d4af37;
+    transform: translateX(5px);
+  }
+
+  .note {
+    font-size: 0.85rem;
+    color: #999;
+    margin-top: 1rem;
+  }
+
+  .track-info {
+    margin-bottom: 3rem;
+  }
+
+  .track-info h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .info-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    text-align: center;
+  }
+
+  .info-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fffbf0;
+    border-radius: 50%;
+    color: #d4af37;
+  }
+
+  .info-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 0.75rem;
+  }
+
+  .info-card p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #666;
+  }
+
+  .info-card a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .info-card a:hover {
+    text-decoration: underline;
+  }
+
+  .faq-section {
+    background: #fff;
+    padding: 3rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .faq-section h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .faq-item {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .faq-item:last-child {
+    border-bottom: none;
+  }
+
+  .faq-item h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 0.75rem;
+  }
+
+  .faq-item p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #666;
+  }
+
+  .faq-item a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .faq-item a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .track-page {
+      padding: 80px 0 3rem;
+    }
+
+    .track-container {
+      padding: 0 1.5rem;
+    }
+
+    .track-form-container,
+    .faq-section {
+      padding: 2rem 1.5rem;
+    }
+
+    .track-title {
+      font-size: 1.75rem;
+    }
+
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

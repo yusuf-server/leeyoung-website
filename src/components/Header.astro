@@ -1,0 +1,2155 @@
+---
+import { getProductCategories, getProducts, type WooCategory, type WooProduct } from '../lib/woocommerce';
+
+const navItems = [
+  { name: 'Home', href: '/' },
+  { name: 'Products', href: '#products', hasMegaMenu: true },
+  { name: 'About', href: '/about' },
+  { name: 'Blog', href: '/blog' },
+  { name: 'Contact', href: '/contact' },
+];
+
+// 从 WooCommerce 获取所有产品（不是分类）
+let productCategories = [];
+try {
+  const products: WooProduct[] = await getProducts({
+    per_page: 100,
+    orderby: 'menu_order',
+    order: 'asc',
+    stock_status: 'instock',
+  });
+
+  productCategories = products.map(product => ({
+    name: product.name.toUpperCase(),
+    image: product.images[0]?.src || 'https://via.placeholder.com/300',
+    href: `/products/${product.slug}`,
+  }));
+} catch (error) {
+  console.error('Failed to fetch products:', error);
+}
+---
+
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <a href="/" class="logo">
+        <span class="logo-text">LEEYOUNG</span>
+      </a>
+
+      <nav class="nav">
+        {navItems.map((item) => (
+          <div class="nav-item">
+            <a href={item.href} class="nav-link">
+              {item.name}
+              {item.hasMegaMenu && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              )}
+            </a>
+
+            {item.hasMegaMenu && (
+              <div class="mega-menu" data-mega-menu>
+                <div class="mega-menu-backdrop" data-mega-backdrop></div>
+                <div class="mega-menu-content" data-mega-content>
+                  <div class="mega-menu-grid">
+                    {productCategories.map((category, index) => (
+                      <a
+                        href={category.href}
+                        class="mega-menu-item"
+                        data-animate-menu="fade-up"
+                        style={`animation-delay: ${index * 50}ms`}
+                      >
+                        <div class="mega-menu-image">
+                          <img src={category.image} alt={category.name} />
+                          <div class="mega-menu-overlay"></div>
+                        </div>
+                        <h3 class="mega-menu-title">{category.name}</h3>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="搜索" data-open-search>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+        </button>
+
+        <!-- User Account Button -->
+        <button class="icon-btn user-btn" aria-label="账户" data-user-btn>
+          <img src="" alt="User" class="user-avatar" data-user-avatar style="display: none;" />
+          <svg class="user-icon" data-user-icon width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+
+        <!-- User Dropdown Menu -->
+        <div class="user-dropdown" data-user-dropdown>
+          <div class="dropdown-header">
+            <img src="" alt="User" class="dropdown-avatar" data-dropdown-avatar />
+            <div class="dropdown-user-info">
+              <div class="dropdown-user-name" data-dropdown-name>User</div>
+              <div class="dropdown-user-email" data-dropdown-email>user@example.com</div>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <nav class="dropdown-menu">
+            <a href="/account/settings" class="dropdown-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m0 6l4.2 4.2M23 12h-6m-6 0H1m13.2 5.2l-4.2-4.2m0-6l-4.2-4.2"></path>
+              </svg>
+              <span>Account Settings</span>
+            </a>
+            <a href="/account/orders" class="dropdown-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+              <span>My Orders</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" data-logout-btn>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Logout</span>
+            </button>
+          </nav>
+        </div>
+
+        <button class="icon-btn cart-btn" aria-label="购物车" data-open-cart>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span class="cart-badge" data-cart-badge style="display: none;">0</span>
+        </button>
+      </div>
+
+      <button class="mobile-menu-btn" aria-label="菜单" data-mobile-menu-btn>
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" data-mobile-menu>
+    <div class="mobile-menu-overlay" data-mobile-menu-overlay></div>
+    <div class="mobile-menu-panel">
+      <div class="mobile-menu-header">
+        <span class="logo-text">LEEYOUNG</span>
+        <button class="mobile-menu-close" data-mobile-menu-close aria-label="关闭菜单">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="mobile-menu-nav">
+        <ul class="mobile-menu-list">
+          {navItems.map((item) => (
+            <li class="mobile-menu-item">
+              {item.hasMegaMenu ? (
+                <>
+                  <button class="mobile-menu-link mobile-menu-link--parent" data-mobile-submenu-toggle>
+                    <span>{item.name}</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </button>
+                  <div class="mobile-submenu" data-mobile-submenu>
+                    <div class="mobile-submenu-header">
+                      <button class="mobile-submenu-back" data-mobile-submenu-back>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                        <span>Back</span>
+                      </button>
+                      <span class="mobile-submenu-title">{item.name}</span>
+                    </div>
+                    <div class="mobile-submenu-grid">
+                      {productCategories.map((category) => (
+                        <a href={category.href} class="mobile-submenu-item">
+                          <div class="mobile-submenu-image">
+                            <img src={category.image} alt={category.name} />
+                          </div>
+                          <span class="mobile-submenu-name">{category.name}</span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <a href={item.href} class="mobile-menu-link">
+                  <span>{item.name}</span>
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s ease;
+  }
+
+  /* 首页特殊样式：初始透明 */
+  body.home-page .header {
+    background: transparent;
+  }
+
+  /* 首页滚动后变黑色 */
+  body.home-page .header.scrolled {
+    background: #000;
+  }
+
+  .container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+  }
+
+  .logo-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: var(--color-secondary);
+  }
+
+  .nav {
+    display: flex;
+    gap: var(--spacing-md);
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .nav-link {
+    color: var(--color-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.3s;
+    padding: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .nav-link:hover {
+    color: var(--color-accent);
+  }
+
+  .nav-link svg {
+    transition: transform 0.3s;
+  }
+
+  .nav-item:hover .nav-link svg {
+    transform: rotate(180deg);
+  }
+
+  /* Mega Menu 样式 */
+  .mega-menu {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    background: transparent;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  .mega-menu.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* 模糊背景遮罩 */
+  .mega-menu-backdrop {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    z-index: -1;
+  }
+
+  .nav-item:hover .mega-menu.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mega-menu-content {
+    position: relative;
+    background: #ffffff;
+    padding: var(--spacing-lg) 0;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .mega-menu-grid {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1.5rem;
+  }
+
+  .mega-menu-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0;
+    background: transparent;
+    transition: all 0.3s;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .nav-item:hover .mega-menu-item[data-animate-menu] {
+    animation: menuItemFadeIn 0.4s ease-out forwards;
+  }
+
+  @keyframes menuItemFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .mega-menu-item:hover {
+    transform: translateY(-5px);
+  }
+
+  .mega-menu-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: #f8f8f8;
+  }
+
+  .mega-menu-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+  }
+
+  .mega-menu-item:hover .mega-menu-image img {
+    transform: scale(1.1);
+  }
+
+  .mega-menu-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .mega-menu-item:hover .mega-menu-overlay {
+    opacity: 1;
+  }
+
+  .mega-menu-title {
+    position: relative;
+    padding: 1.25rem 0.5rem;
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    z-index: 10;
+    line-height: 1.2;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+
+  .icon-btn {
+    color: var(--color-secondary);
+    padding: 0.5rem;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .icon-btn:hover {
+    color: var(--color-accent);
+  }
+
+  /* User Button & Avatar */
+  .user-btn {
+    position: relative;
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-accent);
+  }
+
+  .user-icon {
+    display: block;
+  }
+
+  /* User Dropdown */
+  .user-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: 280px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1001;
+  }
+
+  .user-dropdown.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .dropdown-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-accent);
+  }
+
+  .dropdown-user-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dropdown-user-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dropdown-user-email {
+    font-size: 0.8125rem;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dropdown-divider {
+    height: 1px;
+    background: #e5e5e5;
+    margin: 0 1rem;
+  }
+
+  .dropdown-menu {
+    padding: 0.5rem;
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    color: #333;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .dropdown-item:hover {
+    background: #f8f8f8;
+    color: var(--color-accent);
+  }
+
+  .dropdown-item svg {
+    flex-shrink: 0;
+    color: #666;
+    transition: color 0.2s;
+  }
+
+  .dropdown-item:hover svg {
+    color: var(--color-accent);
+  }
+
+  .dropdown-item span {
+    flex: 1;
+  }
+
+  .cart-btn {
+    position: relative;
+  }
+
+  .cart-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--color-accent);
+    color: #000;
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .mobile-menu-btn span {
+    width: 24px;
+    height: 2px;
+    background: var(--color-secondary);
+    transition: all 0.3s;
+  }
+
+  .mobile-menu-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .mobile-menu-btn.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-menu-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+  }
+
+  /* ==================== Mobile Menu ==================== */
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  .mobile-menu.active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-menu-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  .mobile-menu-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 85%;
+    max-width: 400px;
+    background: #000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-menu.active .mobile-menu-panel {
+    transform: translateX(0);
+  }
+
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-menu-close {
+    background: none;
+    border: none;
+    color: var(--color-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-menu-nav {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .mobile-menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .mobile-menu-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    color: var(--color-secondary);
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .mobile-menu-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-menu-link--parent svg {
+    transition: transform 0.3s;
+  }
+
+  .mobile-menu-item.submenu-open .mobile-menu-link--parent svg {
+    transform: rotate(90deg);
+  }
+
+  /* Mobile Submenu */
+  .mobile-submenu {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 10;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-menu-item.submenu-open .mobile-submenu {
+    transform: translateX(0);
+  }
+
+  .mobile-submenu-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-submenu-back {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--color-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .mobile-submenu-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+  }
+
+  .mobile-submenu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .mobile-submenu-item {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, background 0.2s;
+  }
+
+  .mobile-submenu-item:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-submenu-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+  }
+
+  .mobile-submenu-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mobile-submenu-name {
+    padding: 0.75rem;
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+    min-height: 2.6rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ==================== Auth Modal ==================== */
+  .auth-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .auth-modal.active {
+    display: flex;
+  }
+
+  /* Glassmorphism overlay - no purple gradient */
+  .auth-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+  }
+
+  .auth-modal-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    perspective: 1500px;
+  }
+
+  /* Glass card with 3D effect */
+  .auth-modal-content {
+    position: relative;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(24px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(139, 92, 246, 0.1);
+    transition: transform 0.3s ease;
+    overflow-y: visible;
+    transform: scale(0.9);
+    transform-origin: center;
+  }
+
+  /* Hide scrollbars */
+  .auth-modal-content::-webkit-scrollbar {
+    display: none;
+  }
+
+  .auth-modal-content {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Subtle grid pattern */
+  .auth-modal-content::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0.5px, transparent 0.5px),
+                      linear-gradient(45deg, rgba(255, 255, 255, 0.04) 0.5px, transparent 0.5px);
+    background-size: 30px 30px;
+    opacity: 0.5;
+    pointer-events: none;
+    border-radius: 16px;
+  }
+
+  /* Animated border beams */
+  .border-glow-container {
+    position: absolute;
+    inset: -1px;
+    border-radius: 16px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .border-beam {
+    position: absolute;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+    opacity: 0.7;
+    filter: blur(2px);
+  }
+
+  .border-beam-top {
+    top: 0;
+    left: -50%;
+    height: 3px;
+    width: 50%;
+    animation: beam-horizontal 2.5s ease-in-out infinite;
+  }
+
+  .border-beam-right {
+    top: -50%;
+    right: 0;
+    width: 3px;
+    height: 50%;
+    animation: beam-vertical 2.5s ease-in-out infinite 0.6s;
+  }
+
+  .border-beam-bottom {
+    bottom: 0;
+    right: -50%;
+    height: 3px;
+    width: 50%;
+    animation: beam-horizontal-reverse 2.5s ease-in-out infinite 1.2s;
+  }
+
+  .border-beam-left {
+    bottom: -50%;
+    left: 0;
+    width: 3px;
+    height: 50%;
+    animation: beam-vertical-reverse 2.5s ease-in-out infinite 1.8s;
+  }
+
+  @keyframes beam-horizontal {
+    0%, 100% { left: -50%; opacity: 0.3; }
+    50% { left: 100%; opacity: 0.7; }
+  }
+
+  @keyframes beam-vertical {
+    0%, 100% { top: -50%; opacity: 0.3; }
+    50% { top: 100%; opacity: 0.7; }
+  }
+
+  @keyframes beam-horizontal-reverse {
+    0%, 100% { right: -50%; opacity: 0.3; }
+    50% { right: 100%; opacity: 0.7; }
+  }
+
+  @keyframes beam-vertical-reverse {
+    0%, 100% { bottom: -50%; opacity: 0.3; }
+    50% { bottom: 100%; opacity: 0.7; }
+  }
+
+  .auth-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 10;
+  }
+
+  .auth-modal-close:hover {
+    color: rgba(255, 255, 255, 1);
+    transform: rotate(90deg);
+  }
+
+  /* Tabs */
+  .auth-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1.125rem;
+  }
+
+  .auth-tab {
+    flex: 1;
+    padding: 0.875rem 1rem;
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  .auth-tab:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .auth-tab.active {
+    color: #fff;
+    border-bottom-color: #fff;
+  }
+
+  /* Header */
+  .auth-header {
+    text-align: center;
+    margin-bottom: 0.875rem;
+  }
+
+  .auth-logo {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto 0.625rem;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-logo span {
+    font-size: 1.125rem;
+    font-weight: 700;
+    background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .auth-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .auth-subtitle {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* Form */
+  .auth-form-container {
+    display: none;
+  }
+
+  .auth-form-container.active {
+    display: block;
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .auth-form-register {
+    gap: 0.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.875rem;
+  }
+
+  .form-group {
+    position: relative;
+  }
+
+  /* Input wrapper with icon */
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 0.875rem;
+    color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    transition: color 0.3s;
+    z-index: 1;
+  }
+
+  .input-wrapper:focus-within .input-icon {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .auth-form input {
+    width: 100%;
+    padding: 0.625rem 0.875rem 0.625rem 2.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #fff;
+    font-family: inherit;
+    transition: all 0.3s;
+    font-weight: 500;
+  }
+
+  .auth-form input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .auth-form input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+  }
+
+  /* Password toggle */
+  .password-toggle {
+    position: absolute;
+    right: 0.875rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s;
+    z-index: 1;
+  }
+
+  .password-toggle:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* Form options */
+  .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    margin-top: -0.25rem;
+  }
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .remember-me input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .checkbox-custom {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+    transition: all 0.3s;
+  }
+
+  .remember-me input:checked + .checkbox-custom {
+    background: #fff;
+    border-color: #fff;
+  }
+
+  .remember-me input:checked + .checkbox-custom::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid #000;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .checkbox-label {
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.3s;
+  }
+
+  .remember-me:hover .checkbox-label {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .forgot-password {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .forgot-password:hover {
+    color: #fff;
+  }
+
+  /* Submit button */
+  .btn-auth-submit {
+    position: relative;
+    width: 100%;
+    padding: 0.625rem;
+    background: #fff;
+    color: #000;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-top: 0.125rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+  }
+
+  .btn-auth-submit:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-auth-submit:active {
+    transform: scale(0.98);
+  }
+
+  .btn-arrow {
+    transition: transform 0.3s;
+  }
+
+  .btn-auth-submit:hover .btn-arrow {
+    transform: translateX(4px);
+  }
+
+  .btn-auth-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0.625rem 0 0.5rem;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .divider span {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Google button */
+  .btn-google {
+    position: relative;
+    width: 100%;
+    padding: 0.625rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    transition: all 0.3s;
+  }
+
+  .btn-google:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: scale(1.02);
+  }
+
+  /* Footer */
+  .auth-footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.625rem;
+  }
+
+  .signup-link {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+  }
+
+  .signup-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #fff;
+    transition: width 0.3s;
+  }
+
+  .signup-link:hover::after {
+    width: 100%;
+  }
+
+  /* Messages */
+  .auth-message {
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    text-align: center;
+    margin-top: 0.75rem;
+  }
+
+  .auth-message.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+  }
+
+  .auth-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .header-content {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto auto;
+      column-gap: 0;
+      align-items: center;
+    }
+
+    .mobile-menu-btn {
+      order: 1;
+      grid-column: 1;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-right: 0.25rem;
+    }
+
+    .mobile-menu-btn span {
+      width: 20px;
+      height: 2px;
+    }
+
+    .logo {
+      order: 3;
+      grid-column: 3;
+      justify-self: center;
+      margin: 0 1rem;
+    }
+
+    .header-actions {
+      display: contents;
+    }
+
+    /* Unified button sizes for mobile */
+    .header-actions .icon-btn {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Search button - position 2, close to toggle */
+    .header-actions .icon-btn:nth-child(1) {
+      order: 2;
+      grid-column: 2;
+    }
+
+    /* User button - position 4, close to cart */
+    .header-actions .user-btn {
+      order: 4;
+      grid-column: 4;
+      margin-right: 0.25rem;
+    }
+
+    /* Cart button - position 5 */
+    .header-actions .cart-btn {
+      order: 5;
+      grid-column: 5;
+    }
+
+    .auth-modal {
+      padding: 0.5rem;
+      align-items: flex-start;
+      padding-top: 1.5rem;
+    }
+
+    .auth-modal-content {
+      padding: 1rem;
+      max-height: 96vh;
+      overflow-y: auto;
+      transform: scale(1);
+    }
+
+    .auth-header {
+      margin-bottom: 0.75rem;
+    }
+
+    .auth-logo {
+      width: 2rem;
+      height: 2rem;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-title {
+      font-size: 1rem;
+      margin-bottom: 0.125rem;
+    }
+
+    .auth-subtitle {
+      font-size: 0.7rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-tabs {
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .auth-tab {
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+
+    .auth-form {
+      gap: 0.5rem;
+    }
+
+    .auth-form-register {
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+
+    .input-wrapper {
+      height: 2.25rem;
+    }
+
+    .auth-form input {
+      padding: 0.4rem 0.6rem 0.4rem 2rem;
+      font-size: 0.75rem;
+    }
+
+    .input-icon {
+      width: 13px;
+      height: 13px;
+      left: 0.6rem;
+    }
+
+    .password-toggle {
+      right: 0.6rem;
+    }
+
+    .password-toggle svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .btn-auth-submit,
+    .btn-google {
+      padding: 0.5rem;
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .btn-arrow {
+      width: 14px;
+      height: 14px;
+    }
+
+    .divider {
+      margin: 0.625rem 0 0.5rem;
+    }
+
+    .divider span {
+      font-size: 0.7rem;
+    }
+
+    .auth-footer {
+      font-size: 0.7rem;
+      margin-top: 0.625rem;
+    }
+
+    .form-options {
+      margin: 0.375rem 0 0.25rem;
+      gap: 0.5rem;
+    }
+
+    .remember-me,
+    .forgot-password {
+      font-size: 0.7rem;
+    }
+
+    .checkbox-custom {
+      width: 14px;
+      height: 14px;
+    }
+
+    .checkbox-label {
+      font-size: 0.7rem;
+    }
+
+    .auth-message {
+      padding: 0.5rem;
+      font-size: 0.7rem;
+      margin-top: 0.5rem;
+    }
+
+    .nav {
+      display: none;
+    }
+
+    .mega-menu {
+      display: none;
+    }
+
+    .mobile-menu-btn {
+      display: flex;
+    }
+  }
+</style>
+
+<script>
+  import { CartManager } from '../lib/cart-manager';
+
+  // 移动端菜单交互逻辑
+  document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuBtn = document.querySelector('[data-mobile-menu-btn]');
+    const mobileMenu = document.querySelector('[data-mobile-menu]');
+    const mobileMenuOverlay = document.querySelector('[data-mobile-menu-overlay]');
+    const mobileMenuClose = document.querySelector('[data-mobile-menu-close]');
+    const submenuToggles = document.querySelectorAll('[data-mobile-submenu-toggle]');
+    const submenuBacks = document.querySelectorAll('[data-mobile-submenu-back]');
+
+    // 打开移动端菜单
+    if (mobileMenuBtn) {
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu?.classList.add('active');
+        mobileMenuBtn.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    }
+
+    // 关闭移动端菜单
+    const closeMobileMenu = () => {
+      mobileMenu?.classList.remove('active');
+      mobileMenuBtn?.classList.remove('active');
+      document.body.style.overflow = '';
+      // 关闭所有子菜单
+      document.querySelectorAll('.mobile-menu-item').forEach(item => {
+        item.classList.remove('submenu-open');
+      });
+    };
+
+    if (mobileMenuClose) {
+      mobileMenuClose.addEventListener('click', closeMobileMenu);
+    }
+
+    if (mobileMenuOverlay) {
+      mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+    }
+
+    // 子菜单切换
+    submenuToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const menuItem = toggle.closest('.mobile-menu-item');
+        menuItem?.classList.add('submenu-open');
+      });
+    });
+
+    // 返回按钮
+    submenuBacks.forEach(back => {
+      back.addEventListener('click', () => {
+        const menuItem = back.closest('.mobile-menu-item');
+        menuItem?.classList.remove('submenu-open');
+      });
+    });
+
+    // 点击链接后关闭菜单
+    const mobileMenuLinks = document.querySelectorAll('.mobile-menu-link:not(.mobile-menu-link--parent), .mobile-submenu-item');
+    mobileMenuLinks.forEach(link => {
+      link.addEventListener('click', closeMobileMenu);
+    });
+
+  // Mega Menu 交互逻辑
+    const navItems = document.querySelectorAll('.nav-item');
+
+    navItems.forEach((navItem) => {
+      const megaMenu = navItem.querySelector('[data-mega-menu]');
+      const backdrop = navItem.querySelector('[data-mega-backdrop]');
+
+      if (megaMenu) {
+        let isHovering = false;
+        let hoverTimeout: number;
+
+        // 鼠标进入导航项
+        navItem.addEventListener('mouseenter', () => {
+          clearTimeout(hoverTimeout);
+          isHovering = true;
+          megaMenu.classList.add('show');
+        });
+
+        // 鼠标离开导航项
+        navItem.addEventListener('mouseleave', () => {
+          isHovering = false;
+          hoverTimeout = setTimeout(() => {
+            if (!isHovering) {
+              megaMenu.classList.remove('show');
+            }
+          }, 100);
+        });
+
+        // 鼠标进入 Mega Menu
+        megaMenu.addEventListener('mouseenter', () => {
+          clearTimeout(hoverTimeout);
+          isHovering = true;
+        });
+
+        // 鼠标离开 Mega Menu
+        megaMenu.addEventListener('mouseleave', () => {
+          isHovering = false;
+          hoverTimeout = setTimeout(() => {
+            if (!isHovering) {
+              megaMenu.classList.remove('show');
+            }
+          }, 100);
+        });
+
+        // 点击背景遮罩关闭
+        if (backdrop) {
+          backdrop.addEventListener('click', () => {
+            megaMenu.classList.remove('show');
+          });
+        }
+      }
+    });
+
+    // Cart button click handler
+    const cartBtn = document.querySelector('[data-open-cart]');
+    if (cartBtn) {
+      cartBtn.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('open-cart'));
+      });
+    }
+
+    // Search button click handler
+    const searchBtn = document.querySelector('[data-open-search]');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('open-search'));
+      });
+    }
+
+    // Update cart badge
+    function updateCartBadge() {
+      const badge = document.querySelector('[data-cart-badge]') as HTMLElement;
+      if (badge) {
+        const count = CartManager.getItemCount();
+        badge.textContent = count.toString();
+        badge.style.display = count > 0 ? 'flex' : 'none';
+      }
+    }
+
+    // Update badge on page load
+    updateCartBadge();
+
+    // Listen for cart updates
+    window.addEventListener('cart-updated', () => {
+      updateCartBadge();
+    });
+
+    // ==================== Auth Modal ====================
+    const authBtn = document.querySelector('[data-open-auth]');
+    const authModal = document.querySelector('[data-auth-modal]');
+    const closeAuthBtns = document.querySelectorAll('[data-close-auth]');
+
+    if (authBtn) {
+      authBtn.addEventListener('click', async () => {
+        // Check if user is logged in
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+
+        if (data.authenticated) {
+          // Show user menu
+          showUserMenu(data.user);
+        } else {
+          // Show login modal
+          if (authModal) {
+            authModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+          }
+        }
+      });
+    }
+
+    closeAuthBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (authModal) {
+          authModal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    function showUserMenu(user) {
+      // Simple implementation - redirect to account page or show dropdown
+      alert(`Welcome, ${user.name}!\n\nFeatures:\n- View Orders\n- Account Settings\n- Logout`);
+      // TODO: Implement proper user dropdown menu
+    }
+
+    // Check auth status on page load
+    checkAuthStatus();
+
+    async function checkAuthStatus() {
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+
+        const userBtn = document.querySelector('[data-user-btn]');
+        const userIcon = document.querySelector('[data-user-icon]');
+        const userAvatar = document.querySelector('[data-user-avatar]');
+        const dropdown = document.querySelector('[data-user-dropdown]');
+        const dropdownAvatar = document.querySelector('[data-dropdown-avatar]');
+        const dropdownName = document.querySelector('[data-dropdown-name]');
+        const dropdownEmail = document.querySelector('[data-dropdown-email]');
+
+        if (data.authenticated) {
+          // Show user avatar instead of icon
+          if (userAvatar && userIcon) {
+            userAvatar.src = `${data.user.avatar}?t=${Date.now()}`;
+            userAvatar.style.display = 'block';
+            userIcon.style.display = 'none';
+          }
+
+          // Update dropdown info
+          if (dropdownAvatar) dropdownAvatar.src = `${data.user.avatar}?t=${Date.now()}`;
+          if (dropdownName) dropdownName.textContent = data.user.name;
+          if (dropdownEmail) dropdownEmail.textContent = data.user.email;
+
+          // Add dropdown toggle functionality
+          if (userBtn && dropdown) {
+            userBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              dropdown.classList.toggle('active');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+              dropdown.classList.remove('active');
+            });
+
+            dropdown.addEventListener('click', (e) => {
+              e.stopPropagation();
+            });
+          }
+
+          // Handle logout
+          const logoutBtn = document.querySelector('[data-logout-btn]');
+          if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+              try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.reload();
+              } catch (error) {
+                console.error('Logout error:', error);
+              }
+            });
+          }
+        } else {
+          // Not logged in - keep showing login icon
+          if (userBtn) {
+            userBtn.addEventListener('click', () => {
+              authModal.classList.add('active');
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      }
+    }
+  });
+</script>
+
+<!-- Auth Modal -->
+<div class="auth-modal" data-auth-modal>
+  <div class="auth-modal-overlay" data-close-auth></div>
+
+  <div class="auth-modal-wrapper">
+    <div class="auth-modal-content" data-auth-card>
+      <button class="auth-modal-close" data-close-auth aria-label="Close">×</button>
+
+      <!-- Animated border glow effects -->
+      <div class="border-glow-container">
+        <div class="border-beam border-beam-top"></div>
+        <div class="border-beam border-beam-right"></div>
+        <div class="border-beam border-beam-bottom"></div>
+        <div class="border-beam border-beam-left"></div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-auth-tab="login">Login</button>
+        <button class="auth-tab" data-auth-tab="register">Register</button>
+      </div>
+
+      <!-- Login Form -->
+      <div class="auth-form-container active" data-auth-form="login">
+        <div class="auth-header">
+          <div class="auth-logo">
+            <span>L</span>
+          </div>
+          <h3 class="auth-title">Welcome Back</h3>
+          <p class="auth-subtitle">Sign in to continue to LEEYOUNG</p>
+        </div>
+
+        <form class="auth-form" data-login-form>
+          <div class="form-group">
+            <div class="input-wrapper">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <input type="text" name="username" placeholder="Email or Username" required autocomplete="username" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="input-wrapper">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" name="password" placeholder="Password" required data-password-input />
+              <button type="button" class="password-toggle" data-password-toggle>
+                <svg class="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-options">
+            <label class="remember-me">
+              <input type="checkbox" name="remember" />
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">Remember me</span>
+            </label>
+            <a href="#" class="forgot-password">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn-auth-submit">
+            <span class="btn-text">Sign In</span>
+            <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+
+          <div class="auth-message" data-login-message style="display: none;"></div>
+
+          <p class="auth-footer">
+            Don't have an account? <a href="#" class="signup-link" data-switch-to-register>Sign up</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- Register Form -->
+      <div class="auth-form-container" data-auth-form="register">
+        <div class="auth-header">
+          <div class="auth-logo">
+            <span>L</span>
+          </div>
+          <h3 class="auth-title">Create Account</h3>
+          <p class="auth-subtitle">Join LEEYOUNG today</p>
+        </div>
+
+        <form class="auth-form auth-form-register" data-register-form>
+          <div class="form-row">
+            <div class="form-group">
+              <div class="input-wrapper">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <input type="text" name="username" placeholder="Username" required />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="input-wrapper">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <input type="email" name="email" placeholder="Email address" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="input-wrapper">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <input type="password" name="password" placeholder="Password (min 6 characters)" required minlength="6" data-password-input />
+              <button type="button" class="password-toggle" data-password-toggle>
+                <svg class="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <div class="input-wrapper">
+                <input type="text" name="firstName" placeholder="First Name (optional)" />
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="input-wrapper">
+                <input type="text" name="lastName" placeholder="Last Name (optional)" />
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-auth-submit">
+            <span class="btn-text">Create Account</span>
+            <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+
+          <div class="auth-message" data-register-message style="display: none;"></div>
+
+          <p class="auth-footer">
+            Already have an account? <a href="#" class="signup-link" data-switch-to-login>Sign in</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Auth modal tabs
+  document.addEventListener('DOMContentLoaded', () => {
+    // Password toggle functionality
+    const passwordToggles = document.querySelectorAll('[data-password-toggle]');
+    passwordToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const input = toggle.parentElement?.querySelector('[data-password-input]');
+        if (input) {
+          const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+          input.setAttribute('type', type);
+        }
+      });
+    });
+
+    // Switch between login and register
+    const switchToRegister = document.querySelectorAll('[data-switch-to-register]');
+    const switchToLogin = document.querySelectorAll('[data-switch-to-login]');
+
+    switchToRegister.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelector('[data-auth-tab="register"]')?.click();
+      });
+    });
+
+    switchToLogin.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelector('[data-auth-tab="login"]')?.click();
+      });
+    });
+
+    // Google login/register buttons - removed
+
+    const authTabs = document.querySelectorAll('[data-auth-tab]');
+    const authForms = document.querySelectorAll('[data-auth-form]');
+
+    authTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.getAttribute('data-auth-tab');
+
+        authTabs.forEach(t => t.classList.remove('active'));
+        authForms.forEach(f => f.classList.remove('active'));
+
+        tab.classList.add('active');
+        document.querySelector(`[data-auth-form="${tabName}"]`)?.classList.add('active');
+      });
+    });
+
+    // Login form submission
+    const loginForm = document.querySelector('[data-login-form]');
+    const loginMessage = document.querySelector('[data-login-message]');
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(loginForm);
+        const data = {
+          username: formData.get('username'),
+          password: formData.get('password'),
+        };
+
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        const btnText = submitBtn?.querySelector('.btn-text');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          if (btnText) btnText.textContent = 'Signing in...';
+        }
+
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showAuthMessage(loginMessage, 'Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else {
+            showAuthMessage(loginMessage, result.error || 'Login failed', 'error');
+          }
+
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            if (btnText) btnText.textContent = 'Sign In';
+          }
+        } catch (error) {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            if (btnText) btnText.textContent = 'Sign In';
+          }
+          showAuthMessage(loginMessage, 'An error occurred. Please try again.', 'error');
+        }
+      });
+    }
+
+    // Register form submission
+    const registerForm = document.querySelector('[data-register-form]');
+    const registerMessage = document.querySelector('[data-register-message]');
+
+    if (registerForm) {
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(registerForm);
+        const data = {
+          username: formData.get('username'),
+          email: formData.get('email'),
+          password: formData.get('password'),
+          firstName: formData.get('firstName'),
+          lastName: formData.get('lastName'),
+        };
+
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        const btnText = submitBtn?.querySelector('.btn-text');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          if (btnText) btnText.textContent = 'Creating...';
+        }
+
+        try {
+          const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            showAuthMessage(registerMessage, result.message || 'Account created! Please log in.', 'success');
+            registerForm.reset();
+
+            // Switch to login tab after 2 seconds
+            setTimeout(() => {
+              document.querySelector('[data-auth-tab="login"]')?.click();
+            }, 2000);
+          } else {
+            showAuthMessage(registerMessage, result.error || 'Registration failed', 'error');
+          }
+
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            if (btnText) btnText.textContent = 'Create Account';
+          }
+        } catch (error) {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            if (btnText) btnText.textContent = 'Create Account';
+          }
+          showAuthMessage(registerMessage, 'An error occurred. Please try again.', 'error');
+        }
+      });
+    }
+
+    function showAuthMessage(element, message, type) {
+      if (element) {
+        element.textContent = message;
+        element.className = `auth-message ${type}`;
+        element.style.display = 'block';
+
+        setTimeout(() => {
+          element.style.display = 'none';
+        }, 5000);
+      }
+    }
+  });
+</script>

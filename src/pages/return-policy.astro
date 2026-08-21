@@ -1,0 +1,474 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Return Policy - LEEYOUNG" description="Learn about our return and refund policy">
+  <Header />
+
+  <main class="policy-page">
+    <div class="policy-container">
+      <nav class="breadcrumb">
+        <a href="/">Home</a>
+        <span>/</span>
+        <span>Return Policy</span>
+      </nav>
+
+      <h1 class="policy-title">Return Policy</h1>
+
+      <div class="policy-content">
+        <div class="policy-intro">
+          <p>Welcome to Leeyoungstore.com! All our products come with a <strong>3-months warranty</strong> and can be returned for free within <strong>30 days of delivery</strong> for approved reasons! The same warranty applies to replacement products. Please contact us if you have any problems!</p>
+        </div>
+
+        <section class="policy-section">
+          <h2>I. Eligible Return Reasons & Cost Responsibility</h2>
+
+          <div class="table-responsive">
+            <table class="policy-table">
+              <thead>
+                <tr>
+                  <th>Return Reason</th>
+                  <th>Free Return</th>
+                  <th>Shipping Cost</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Dead on Arrival (DOA)</td>
+                  <td><span class="badge-yes">Yes</span></td>
+                  <td>Seller</td>
+                  <td>Provide photos or videos as evidence.</td>
+                </tr>
+                <tr>
+                  <td>Wrong Item Sent</td>
+                  <td><span class="badge-yes">Yes</span></td>
+                  <td>Seller</td>
+                  <td>Provide clear photos of the item, SKU/PN number, and all shipping labels.</td>
+                </tr>
+                <tr>
+                  <td>Not as Described</td>
+                  <td><span class="badge-yes">Yes</span></td>
+                  <td>Seller</td>
+                  <td>Provide photos showing the discrepancy.</td>
+                </tr>
+                <tr>
+                  <td>Quality Issues</td>
+                  <td><span class="badge-yes">Yes</span></td>
+                  <td>Seller</td>
+                  <td>Provide photos or videos illustrating the issue.</td>
+                </tr>
+                <tr>
+                  <td>Missing Parts</td>
+                  <td><span class="badge-yes">Yes</span></td>
+                  <td>Seller</td>
+                  <td>Provide photos or videos showing the missing parts.</td>
+                </tr>
+                <tr>
+                  <td>Personal Reasons<br/>(e.g., dislike, unnecessary, mistaken purchase)</td>
+                  <td><span class="badge-no">No</span></td>
+                  <td>Buyer</td>
+                  <td>Return shipping and restocking fees apply.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="policy-section">
+          <h2>II. Return & Refund Process</h2>
+
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <h3>Contact Customer Service</h3>
+                <p>Email us at <a href="mailto:customerservice@leeyoungshop.com">customerservice@leeyoungshop.com</a>, stating the return reason and providing the order number along with relevant photos or videos.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <h3>Receive RMA Number</h3>
+                <p>Our customer service team will review your request and provide a Return Merchandise Authorization (RMA) number and return address.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <h3>Ship the Item</h3>
+                <p>Ship the item along with the RMA number, ensuring the packaging is intact.</p>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-number">4</div>
+              <div class="step-content">
+                <h3>Refund Processing</h3>
+                <p>Once our warehouse receives the return, our customer service team will process the refund or replacement within 5 business days.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="policy-section">
+          <h2>III. Refund Processing Time</h2>
+
+          <div class="table-responsive">
+            <table class="policy-table">
+              <thead>
+                <tr>
+                  <th>Payment Method</th>
+                  <th>Refund Timeframe</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Credit Card</td>
+                  <td>Within 3–15 business days</td>
+                  <td>Actual time depends on the card issuer.</td>
+                </tr>
+                <tr>
+                  <td>PayPal</td>
+                  <td>Within 48 hours after refund email</td>
+                  <td>—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="policy-section">
+          <h2>IV. Return Address & Important Notes</h2>
+
+          <h3>1. Return Address:</h3>
+          <p>Please contact us at <a href="mailto:customerservice@leeyoungshop.com">customerservice@leeyoungshop.com</a> to obtain the return address.</p>
+
+          <h3>2. Important Notes:</h3>
+          <ul>
+            <li>Do not return items to the sender's address on the package; please use the provided return address.</li>
+            <li>Returned items must be in original packaging with all accessories, gifts, and related documents included.</li>
+          </ul>
+        </section>
+
+        <div class="policy-contact">
+          <h3>Need Help?</h3>
+          <p>If you have any questions or need further assistance, please feel free to contact us:</p>
+          <p><strong>Email:</strong> <a href="mailto:customerservice@leeyoungshop.com">customerservice@leeyoungshop.com</a></p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .policy-page {
+    min-height: 100vh;
+    background: #fafafa;
+    padding: 100px 0 4rem;
+  }
+
+  .policy-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .breadcrumb a {
+    color: #666;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .breadcrumb a:hover {
+    color: #000;
+  }
+
+  .breadcrumb span {
+    color: #999;
+  }
+
+  .policy-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 2rem;
+    letter-spacing: -0.02em;
+  }
+
+  .policy-content {
+    background: #fff;
+    padding: 3rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .policy-intro {
+    background: #fffbf0;
+    border-left: 4px solid #d4af37;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 4px;
+  }
+
+  .policy-intro p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #333;
+    margin: 0;
+  }
+
+  .policy-section {
+    margin-bottom: 3rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .policy-section:last-of-type {
+    border-bottom: none;
+  }
+
+  .policy-section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .policy-section h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #000;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .policy-section p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  .policy-section ul {
+    list-style: disc;
+    padding-left: 2rem;
+    margin: 1rem 0;
+  }
+
+  .policy-section li {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+
+  .policy-section a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .policy-section a:hover {
+    text-decoration: underline;
+  }
+
+  /* Table Styles */
+  .table-responsive {
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  .policy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .policy-table thead {
+    background: #f8f8f8;
+  }
+
+  .policy-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #000;
+    border-bottom: 2px solid #e5e5e5;
+  }
+
+  .policy-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e5e5;
+    color: #333;
+    line-height: 1.6;
+  }
+
+  .policy-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .badge-yes {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: #d4f4dd;
+    color: #0f5132;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  .badge-no {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: #f8d7da;
+    color: #842029;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  /* Steps */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .step {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .step-number {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: #d4af37;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .step-content h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .step-content p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #666;
+    margin: 0;
+  }
+
+  .step-content a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .step-content a:hover {
+    text-decoration: underline;
+  }
+
+  .policy-contact {
+    background: #f8f8f8;
+    padding: 1.5rem;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .policy-contact h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 0.75rem;
+  }
+
+  .policy-contact p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+
+  .policy-contact a {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .policy-contact a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .policy-page {
+      padding: 80px 0 3rem;
+    }
+
+    .policy-container {
+      padding: 0 1.5rem;
+    }
+
+    .policy-content {
+      padding: 2rem 1.5rem;
+    }
+
+    .policy-title {
+      font-size: 1.75rem;
+    }
+
+    .policy-section h2 {
+      font-size: 1.25rem;
+    }
+
+    .policy-section h3 {
+      font-size: 1rem;
+    }
+
+    .policy-table {
+      font-size: 0.8rem;
+    }
+
+    .policy-table th,
+    .policy-table td {
+      padding: 0.75rem 0.5rem;
+    }
+
+    .step {
+      gap: 1rem;
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      font-size: 0.95rem;
+    }
+  }
+</style>

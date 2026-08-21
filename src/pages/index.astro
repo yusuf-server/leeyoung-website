@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import AdvantagesBar from '../components/AdvantagesBar.astro';
+import FullscreenCategories from '../components/FullscreenCategories.astro';
+import MarqueeBanner from '../components/MarqueeBanner.astro';
+import PopularProducts from '../components/PopularProducts.astro';
+import AboutSection from '../components/AboutSection.astro';
+import Testimonials from '../components/Testimonials.astro';
+import ImageBanner from '../components/ImageBanner.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="LEEYOUNG - Premium Hand Trucks & Material Handling Equipment" description="Manufacturing quality hand trucks, platform carts, and material handling solutions for industrial and commercial use">
+  <Header />
+  <Hero />
+  <AdvantagesBar />
+  <FullscreenCategories />
+  <MarqueeBanner />
+  <AboutSection />
+  <PopularProducts />
+  <Testimonials />
+  <ImageBanner />
+  <AdvantagesBar />
+  <Footer />
+</BaseLayout>
+
+<script>
+  // 首页Header滚动效果
+  document.body.classList.add('home-page');
+
+  const header = document.querySelector('.header');
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      header?.classList.add('scrolled');
+    } else {
+      header?.classList.remove('scrolled');
+    }
+  });
+</script>

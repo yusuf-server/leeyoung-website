@@ -1,0 +1,137 @@
+---
+// 滚动动画组件 - 监听元素进入视口时触发动画
+---
+
+<script>
+  // 等待DOM加载完成
+  document.addEventListener('DOMContentLoaded', () => {
+    // 获取所有需要动画的元素
+    const animatedElements = document.querySelectorAll('[data-animate]');
+
+    // 创建 Intersection Observer
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // 元素进入视口，添加动画类
+            entry.target.classList.add('animate-in');
+
+            // 如果只需要动画一次，取消观察
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.1, // 当10%的元素可见时触发
+        rootMargin: '0px 0px -50px 0px', // 提前50px触发
+      }
+    );
+
+    // 观察所有需要动画的元素
+    animatedElements.forEach((el) => {
+      observer.observe(el);
+    });
+  });
+</script>
+
+<style is:global>
+  /* 动画基础样式 - 隐藏状态 */
+  [data-animate] {
+    opacity: 0;
+  }
+
+  /* fade-up 动画 */
+  [data-animate="fade-up"] {
+    transform: translateY(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  [data-animate="fade-up"].animate-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* fade-down 动画 */
+  [data-animate="fade-down"] {
+    transform: translateY(-50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  [data-animate="fade-down"].animate-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* fade-left 动画 */
+  [data-animate="fade-left"] {
+    transform: translateX(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  [data-animate="fade-left"].animate-in {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* fade-right 动画 */
+  [data-animate="fade-right"] {
+    transform: translateX(-50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  [data-animate="fade-right"].animate-in {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* fade 动画 - 纯淡入 */
+  [data-animate="fade"] {
+    transition: opacity 1s ease-out;
+  }
+
+  [data-animate="fade"].animate-in {
+    opacity: 1;
+  }
+
+  /* scale 动画 - 缩放 */
+  [data-animate="scale"] {
+    transform: scale(0.9);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  [data-animate="scale"].animate-in {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* 延迟动画 - 可以给子元素添加 */
+  [data-animate-delay="100"] {
+    transition-delay: 0.1s;
+  }
+
+  [data-animate-delay="200"] {
+    transition-delay: 0.2s;
+  }
+
+  [data-animate-delay="300"] {
+    transition-delay: 0.3s;
+  }
+
+  [data-animate-delay="400"] {
+    transition-delay: 0.4s;
+  }
+
+  [data-animate-delay="500"] {
+    transition-delay: 0.5s;
+  }
+
+  [data-animate-delay="600"] {
+    transition-delay: 0.6s;
+  }
+
+  /* 避免在首屏元素上出现动画 */
+  .hero [data-animate] {
+    opacity: 1;
+    transform: none;
+  }
+</style>

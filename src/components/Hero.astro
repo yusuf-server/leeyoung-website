@@ -1,0 +1,378 @@
+---
+interface Props {
+  desktopVideo?: string;
+  mobileVideo?: string;
+  posterImage?: string;
+}
+
+const {
+  desktopVideo = 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/生活化场景首页视频.mp4',
+  mobileVideo = 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/手机端生活化首页视频.mp4',
+  } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero-background">
+    <!-- 桌面端视频 -->
+    <video
+      class="hero-video hero-video-desktop"
+      autoplay
+      muted
+      loop
+      playsinline
+      
+    >
+      <source src={desktopVideo} type="video/mp4" />
+    </video>
+
+    <!-- 移动端视频 -->
+    <video
+      class="hero-video hero-video-mobile"
+      autoplay
+      muted
+      loop
+      playsinline
+      
+    >
+      <source src={mobileVideo} type="video/mp4" />
+    </video>
+
+    <div class="hero-overlay"></div>
+  </div>
+
+  <div class="hero-container">
+    <div class="hero-content">
+      <p class="hero-subtitle" data-hero-animate="subtitle">PRECISION ENGINEERED & BUILT TO LAST</p>
+      <h1 class="hero-title" data-hero-animate="title">PREMIUM<br/>HANDTRUCKS</h1>
+      <div class="hero-actions" data-hero-animate="actions">
+        <button class="btn btn-primary" id="exploreCollectionBtn">Explore 2026 Collection</button>
+        <a href="/shop" class="btn btn-secondary">View All Products</a>
+      </div>
+    </div>
+  </div>
+
+  <button class="scroll-indicator" aria-label="Scroll down" data-hero-animate="scroll">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14M19 12l-7 7-7-7"/>
+    </svg>
+  </button>
+</section>
+
+<script>
+  import { gsap } from '../lib/gsap';
+  import { SplitText } from 'gsap/SplitText';
+  import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+
+  // 注册 ScrollToPlugin
+  gsap.registerPlugin(ScrollToPlugin);
+
+  // Hero 入场动画
+  const heroTimeline = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+  // 分割标题文字
+  const titleSplit = SplitText.create('[data-hero-animate="title"]', {
+    type: 'chars',
+    charsClass: 'hero-char',
+  });
+
+  // 时间轴动画序列
+  heroTimeline
+    // 副标题淡入
+    .from('[data-hero-animate="subtitle"]', {
+      y: 30,
+      opacity: 0,
+      duration: 0.8,
+    })
+    // 标题字符逐个出现（stagger）
+    .from(
+      titleSplit.chars,
+      {
+        y: 100,
+        opacity: 0,
+        rotationX: -90,
+        stagger: 0.03,
+        duration: 0.8,
+        ease: 'back.out(1.7)',
+      },
+      '-=0.4'
+    )
+    // 按钮组淡入
+    .from(
+      '[data-hero-animate="actions"]',
+      {
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
+      },
+      '-=0.4'
+    )
+    // 滚动指示器弹跳
+    .from(
+      '[data-hero-animate="scroll"]',
+      {
+        y: -20,
+        opacity: 0,
+        duration: 0.6,
+      },
+      '-=0.3'
+    );
+
+  // 滚动指示器持续弹跳动画
+  gsap.to('[data-hero-animate="scroll"]', {
+    y: 10,
+    duration: 1,
+    repeat: -1,
+    yoyo: true,
+    ease: 'power1.inOut',
+  });
+
+  // 按钮悬停动画
+  document.querySelectorAll('.btn').forEach((btn) => {
+    const hoverTl = gsap.timeline({ paused: true });
+    hoverTl.to(btn, {
+      x: 5,
+      duration: 0.3,
+      ease: 'power2.out',
+    });
+
+    btn.addEventListener('mouseenter', () => hoverTl.play());
+    btn.addEventListener('mouseleave', () => hoverTl.reverse());
+  });
+
+  // "Explore 2026 Collection" 按钮 - 平滑滚动到 PopularProducts
+  const exploreBtn = document.getElementById('exploreCollectionBtn');
+  if (exploreBtn) {
+    exploreBtn.addEventListener('click', () => {
+      const popularProducts = document.querySelector('.popular-products');
+      if (popularProducts) {
+        gsap.to(window, {
+          duration: 1.5,
+          scrollTo: {
+            y: popularProducts,
+            offsetY: 80, // 偏移量，避免被 header 遮挡
+          },
+          ease: 'power3.inOut',
+        });
+      }
+    });
+  }
+
+  // 滚动指示器 - 平滑滚动到 Hero 下一个组件
+  const scrollIndicator = document.querySelector('.scroll-indicator');
+  if (scrollIndicator) {
+    scrollIndicator.addEventListener('click', () => {
+      const hero = document.querySelector('.hero');
+      if (hero) {
+        const nextSection = hero.nextElementSibling;
+        if (nextSection) {
+          gsap.to(window, {
+            duration: 1.2,
+            scrollTo: {
+              y: nextSection,
+              offsetY: 0,
+            },
+            ease: 'power3.inOut',
+          });
+        }
+      }
+    });
+  }
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .hero-background {
+    position: absolute;
+    inset: 0;
+    background: #000;
+  }
+
+  /* 视频背景样式 */
+  .hero-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  /* 桌面端视频 - 默认显示 */
+  .hero-video-desktop {
+    display: block;
+  }
+
+  /* 移动端视频 - 默认隐藏 */
+  .hero-video-mobile {
+    display: none;
+  }
+
+  /* 移动端显示移动端视频 */
+  @media (max-width: 768px) {
+    .hero-video-desktop {
+      display: none;
+    }
+
+    .hero-video-mobile {
+      display: block;
+    }
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.3) 0%,
+      rgba(0, 0, 0, 0.4) 60%,
+      rgba(0, 0, 0, 0.95) 100%
+    );
+    z-index: 1;
+  }
+
+  .hero-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+  }
+
+  .hero-content {
+    max-width: 700px;
+    color: var(--color-secondary);
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-secondary);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .hero-title {
+    font-size: clamp(3.5rem, 10vw, 5rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--spacing-lg);
+    text-transform: uppercase;
+  }
+
+  /* SplitText 字符样式 */
+  .hero-char {
+    display: inline-block;
+    transform-origin: bottom center;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 1rem 2rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--color-secondary);
+    color: var(--color-primary);
+    border: 2px solid var(--color-secondary);
+  }
+
+  .btn-primary:hover {
+    background: transparent;
+    color: var(--color-secondary);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-secondary);
+    border: 2px solid var(--color-secondary);
+  }
+
+  .btn-secondary:hover {
+    background: var(--color-secondary);
+    color: var(--color-primary);
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--color-secondary);
+    z-index: 10;
+    opacity: 0.7;
+  }
+
+  @media (max-width: 1024px) {
+    .hero-container {
+      padding: 0 var(--spacing-md);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      height: 90vh;
+      min-height: 550px;
+    }
+
+    .hero-overlay {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-container {
+      padding: 0 1.5rem;
+    }
+
+    .hero-content {
+      max-width: 100%;
+    }
+
+    .hero-subtitle {
+      font-size: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero-title {
+      font-size: 2.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      width: 100%;
+      text-align: center;
+      padding: 0.875rem 1.5rem;
+      font-size: 0.8rem;
+    }
+
+    .scroll-indicator {
+      bottom: 1.5rem;
+    }
+  }
+</style>

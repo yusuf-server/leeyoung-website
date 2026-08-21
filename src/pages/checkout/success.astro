@@ -1,0 +1,346 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+export const prerender = false;
+
+const orderId = Astro.url.searchParams.get('order_id');
+const orderKey = Astro.url.searchParams.get('order_key');
+const autoCreated = Astro.url.searchParams.get('auto_created');
+---
+
+<BaseLayout title="Order Confirmed - LEEYOUNG" description="Your order has been confirmed">
+  <Header />
+
+  <section class="success-page">
+    <div class="success-container">
+
+      <!-- Success Icon -->
+      <div class="success-icon">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+
+      <!-- Success Message -->
+      <h1 class="success-title">Order confirmed</h1>
+      <p class="success-subtitle">Thank you for your purchase!</p>
+
+      {(autoCreated === 'true' || autoCreated === '1') && (
+        <div class="account-created-notice">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <p>
+            <strong>Account created!</strong> We've automatically created an account for you.
+            You're now logged in and can track your order anytime.
+          </p>
+        </div>
+      )}
+
+      {orderId && (
+        <div class="order-info">
+          <p class="order-number">Order #{orderId}</p>
+          <p class="order-message">
+            You'll receive a confirmation email with your order details and tracking information.
+          </p>
+        </div>
+      )}
+
+      <!-- Action Buttons -->
+      <div class="success-actions">
+        <a href="/shop" class="btn btn-primary">Continue Shopping</a>
+        <a href="/account/orders" class="btn btn-secondary">View My Orders</a>
+      </div>
+
+      <!-- Additional Info -->
+      <div class="success-info">
+        <div class="info-card">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+          <div>
+            <h3>Fast Delivery</h3>
+            <p>Your order will be shipped within 1-2 business days</p>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <div>
+            <h3>Order Updates</h3>
+            <p>We'll send you email updates about your order status</p>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <div>
+            <h3>Need Help?</h3>
+            <p>Contact our support team if you have any questions</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  import { gsap } from '../../lib/gsap';
+
+  // Entrance animations
+  gsap.from('.success-icon', {
+    scale: 0,
+    rotation: -180,
+    duration: 0.6,
+    ease: 'back.out(1.7)',
+  });
+
+  gsap.from('.success-title', {
+    opacity: 0,
+    y: 20,
+    duration: 0.6,
+    delay: 0.2,
+    ease: 'power2.out',
+  });
+
+  gsap.from('.success-subtitle', {
+    opacity: 0,
+    y: 20,
+    duration: 0.6,
+    delay: 0.3,
+    ease: 'power2.out',
+  });
+
+  gsap.from('.account-created-notice', {
+    opacity: 0,
+    y: 20,
+    duration: 0.6,
+    delay: 0.35,
+    ease: 'power2.out',
+  });
+
+  gsap.from('.order-info', {
+    opacity: 0,
+    y: 20,
+    duration: 0.6,
+    delay: 0.4,
+    ease: 'power2.out',
+  });
+
+  gsap.from('.success-actions', {
+    opacity: 0,
+    y: 20,
+    duration: 0.6,
+    delay: 0.5,
+    ease: 'power2.out',
+  });
+
+  gsap.from('.info-card', {
+    opacity: 0,
+    y: 20,
+    duration: 0.6,
+    delay: 0.6,
+    stagger: 0.1,
+    ease: 'power2.out',
+  });
+</script>
+
+<style>
+  .success-page {
+    min-height: 100vh;
+    background: #fafafa;
+    padding: 8rem 2rem 6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .success-container {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .success-icon {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 2rem;
+    background: #d4af37;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .success-icon svg {
+    color: #fff;
+  }
+
+  .success-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .success-subtitle {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+  }
+
+  .account-created-notice {
+    background: #e6f7e6;
+    border: 1px solid #4caf50;
+    border-left: 4px solid #4caf50;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    text-align: left;
+  }
+
+  .account-created-notice svg {
+    flex-shrink: 0;
+    color: #4caf50;
+    margin-top: 2px;
+  }
+
+  .account-created-notice p {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: #2d5016;
+  }
+
+  .account-created-notice strong {
+    font-weight: 600;
+  }
+
+  .order-info {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid #e5e7eb;
+  }
+
+  .order-number {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .order-message {
+    font-size: 0.9375rem;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+
+  .success-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: #d4af37;
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: #c49d2e;
+  }
+
+  .btn-secondary {
+    background: #fff;
+    color: #d4af37;
+    border: 2px solid #d4af37;
+  }
+
+  .btn-secondary:hover {
+    background: #d4af37;
+    color: #fff;
+  }
+
+  .success-info {
+    display: grid;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+
+  .info-card {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    gap: 1rem;
+    text-align: left;
+    border: 1px solid #e5e7eb;
+  }
+
+  .info-card svg {
+    flex-shrink: 0;
+    color: #d4af37;
+  }
+
+  .info-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .info-card p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .success-page {
+      padding: 6rem 1.5rem 4rem;
+    }
+
+    .success-title {
+      font-size: 2rem;
+    }
+
+    .success-actions {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+</style>

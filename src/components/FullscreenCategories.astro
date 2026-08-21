@@ -1,0 +1,655 @@
+---
+import { getProductCategories, type WooCategory } from '../lib/woocommerce';
+
+interface Category {
+  id: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  link: string;
+}
+
+// 从 WooCommerce 获取产品分类
+let wooCategories: WooCategory[] = [];
+try {
+  wooCategories = await getProductCategories({
+    per_page: 100,
+    parent: 0, // 只获取顶级分类
+  });
+} catch (error) {
+  console.error('Failed to fetch product categories:', error);
+}
+
+// 转换为组件需要的格式
+let categories: Category[] = wooCategories
+  .filter(cat => cat.count > 0) // 只显示有产品的分类
+  .map((cat, index) => ({
+    id: cat.id.toString(),
+    title: cat.name.toUpperCase(),
+    subtitle: cat.description || `${cat.count} Products`,
+    image: cat.image?.src || 'https://via.placeholder.com/600x900',
+    link: `/shop?category=${cat.slug}`,
+  }));
+
+// 如果没有分类，使用默认假数据
+if (categories.length === 0) {
+  categories = [
+    {
+      id: '1',
+      title: 'UTILITY CARTS',
+      subtitle: 'Heavy-Duty Work Carts',
+      image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600&h=900&fit=crop',
+      link: '/shop'
+    },
+    {
+      id: '2',
+      title: 'PLATFORM TRUCKS',
+      subtitle: 'Flatbed Platform Series',
+      image: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=600&h=900&fit=crop',
+      link: '/shop'
+    },
+    {
+      id: '3',
+      title: 'FOLDING CARTS',
+      subtitle: 'Compact & Portable',
+      image: 'https://images.unsplash.com/photo-1553808080-fd64e92ca1ed?w=600&h=900&fit=crop',
+      link: '/shop'
+    },
+    {
+      id: '4',
+      title: 'WAREHOUSE TROLLEYS',
+      subtitle: 'Industrial Grade',
+      image: 'https://images.unsplash.com/photo-1586528116493-a029325540fa?w=600&h=900&fit=crop',
+      link: '/shop'
+    },
+    {
+      id: '5',
+      title: 'ALUMINUM TRUCKS',
+      subtitle: 'Lightweight & Durable',
+      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&h=900&fit=crop',
+      link: '/shop'
+    },
+    {
+      id: '6',
+      title: 'ACCESSORIES',
+      subtitle: 'Parts & Add-ons',
+      image: 'https://images.unsplash.com/photo-1580893211497-e0a44ae8e6cb?w=600&h=900&fit=crop',
+      link: '/shop'
+    },
+  ];
+}
+---
+
+<section class="fullscreen-categories">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <p class="section-subtitle" data-cat="subtitle">EXPLORE OUR</p>
+      <h2 class="section-title" data-cat="title">Product Collections</h2>
+    </div>
+
+    <div class="categories-wrapper" data-animate="fade-up">
+      <div class="categories-slider" id="categoriesSlider">
+        {categories.map((category, index) => (
+          <div class="category-card" data-cat-card={index}>
+            <a href={category.link} class="category-link">
+              <div class="category-image">
+                <img src={category.image} alt={category.title} loading="lazy" />
+                <div class="category-overlay"></div>
+              </div>
+              <div class="category-content">
+                <span class="category-number">0{index + 1}</span>
+                <h3 class="category-title">{category.title}</h3>
+                <p class="category-subtitle">{category.subtitle}</p>
+                <span class="category-arrow">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </span>
+              </div>
+            </a>
+          </div>
+        ))}
+      </div>
+
+      <!-- 导航按钮 - 右下角 -->
+      <div class="nav-controls">
+        <button class="nav-btn nav-prev" id="navPrev" aria-label="Previous">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+        <button class="nav-btn nav-next" id="navNext" aria-label="Next">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from '../lib/gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { SplitText } from 'gsap/SplitText';
+
+  // 标题分割和动画
+  const titleSplit = SplitText.create('[data-cat="title"]', {
+    type: 'chars',
+    charsClass: 'cat-char',
+  });
+
+  const categoryTL = gsap.timeline({
+    scrollTrigger: {
+      trigger: '.fullscreen-categories',
+      start: 'top 70%',
+      toggleActions: 'play none none reverse',
+      onEnter: () => {
+        // 每次进入视口时重置到第一个分类
+        const slider = document.getElementById('categoriesSlider');
+        if (slider) {
+          slider.scrollLeft = 0;
+        }
+      },
+    },
+  });
+
+  categoryTL
+    .from('[data-cat="subtitle"]', {
+      y: 20,
+      opacity: 0,
+      duration: 0.6,
+    })
+    .from(
+      titleSplit.chars,
+      {
+        y: 80,
+        opacity: 0,
+        rotationX: -90,
+        stagger: 0.02,
+        duration: 0.6,
+        ease: 'back.out(1.5)',
+      },
+      '-=0.3'
+    );
+
+  // 卡片交错动画
+  gsap.utils.toArray('[data-cat-card]').forEach((card: any, index) => {
+    gsap.from(card, {
+      scrollTrigger: {
+        trigger: card,
+        start: 'top 90%',
+        toggleActions: 'play none none reverse',
+      },
+      y: 100,
+      opacity: 0,
+      scale: 0.9,
+      duration: 0.8,
+      delay: index * 0.1,
+      ease: 'power2.out',
+    });
+
+    // 悬停动画（移除卡片垂直移动，保持对齐）
+    const hoverTL = gsap.timeline({ paused: true });
+    const img = card.querySelector('img');
+    const arrow = card.querySelector('.category-arrow');
+
+    hoverTL
+      .to(img, {
+        scale: 1.1,
+        duration: 0.4,
+        ease: 'power2.out',
+      }, 0)
+      .to(arrow, {
+        x: 10,
+        duration: 0.3,
+        ease: 'power2.out',
+      }, 0);
+
+    card.addEventListener('mouseenter', () => hoverTL.play());
+    card.addEventListener('mouseleave', () => hoverTL.reverse());
+  });
+
+  // 自动滚动和导航按钮
+  const slider = document.getElementById('categoriesSlider');
+  const prevBtn = document.getElementById('navPrev');
+  const nextBtn = document.getElementById('navNext');
+
+  if (slider && prevBtn && nextBtn) {
+    let autoScrollTween: gsap.core.Tween | null = null;
+    let isHovering = false;
+    let isManualScrolling = false;
+    let manualScrollTimer: number | null = null;
+    let isButtonClicking = false;
+
+    // 自动滚动函数
+    function startAutoScroll() {
+      if (isHovering || isManualScrolling || isButtonClicking) return;
+
+      const maxScroll = slider.scrollWidth - slider.clientWidth;
+      const currentScroll = slider.scrollLeft;
+
+      // 如果到达末尾，滚回开头
+      if (currentScroll >= maxScroll - 5) {
+        autoScrollTween = gsap.to(slider, {
+          scrollLeft: 0,
+          duration: 1,
+          ease: 'power2.inOut',
+          onComplete: () => {
+            setTimeout(() => {
+              if (!isHovering && !isManualScrolling && !isButtonClicking) {
+                startAutoScroll();
+              }
+            }, 2000);
+          },
+        });
+      } else {
+        // 继续向右滚动
+        autoScrollTween = gsap.to(slider, {
+          scrollLeft: '+=400',
+          duration: 1.5,
+          ease: 'power2.inOut',
+          onComplete: () => {
+            setTimeout(() => {
+              if (!isHovering && !isManualScrolling && !isButtonClicking) {
+                startAutoScroll();
+              }
+            }, 2000);
+          },
+        });
+      }
+    }
+
+    // 停止自动滚动
+    function stopAutoScroll() {
+      if (autoScrollTween) {
+        autoScrollTween.kill();
+        autoScrollTween = null;
+      }
+    }
+
+    // 启动自动滚动（延迟3秒开始）
+    setTimeout(() => {
+      startAutoScroll();
+    }, 3000);
+
+    // 鼠标悬停暂停自动滚动
+    slider.addEventListener('mouseenter', () => {
+      isHovering = true;
+      stopAutoScroll();
+    });
+
+    slider.addEventListener('mouseleave', () => {
+      isHovering = false;
+      if (!isManualScrolling && !isButtonClicking) {
+        setTimeout(() => {
+          if (!isManualScrolling && !isButtonClicking) {
+            startAutoScroll();
+          }
+        }, 2000);
+      }
+    });
+
+    // 手动滚动检测
+    let scrollTimer: number | null = null;
+    slider.addEventListener('scroll', (e) => {
+      updateButtons();
+
+      // 检测是否是用户手动滚动（非GSAP动画滚动）
+      if (!autoScrollTween || !autoScrollTween.isActive()) {
+        if (!isButtonClicking) {
+          isManualScrolling = true;
+          stopAutoScroll();
+
+          if (scrollTimer) clearTimeout(scrollTimer);
+          scrollTimer = window.setTimeout(() => {
+            isManualScrolling = false;
+            if (!isHovering && !isButtonClicking) {
+              setTimeout(() => {
+                if (!isHovering && !isButtonClicking) {
+                  startAutoScroll();
+                }
+              }, 2000);
+            }
+          }, 3000);
+        }
+      }
+    });
+
+    // 手动导航按钮
+    prevBtn.addEventListener('click', () => {
+      stopAutoScroll();
+      isButtonClicking = true;
+      isManualScrolling = false;
+
+      gsap.to(slider, {
+        scrollLeft: slider.scrollLeft - 400,
+        duration: 0.6,
+        ease: 'power2.out',
+        onComplete: () => {
+          updateButtons();
+        },
+      });
+
+      if (manualScrollTimer) clearTimeout(manualScrollTimer);
+      manualScrollTimer = window.setTimeout(() => {
+        isButtonClicking = false;
+        if (!isHovering && !isManualScrolling) {
+          startAutoScroll();
+        }
+      }, 3000);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      stopAutoScroll();
+      isButtonClicking = true;
+      isManualScrolling = false;
+
+      gsap.to(slider, {
+        scrollLeft: slider.scrollLeft + 400,
+        duration: 0.6,
+        ease: 'power2.out',
+        onComplete: () => {
+          updateButtons();
+        },
+      });
+
+      if (manualScrollTimer) clearTimeout(manualScrollTimer);
+      manualScrollTimer = window.setTimeout(() => {
+        isButtonClicking = false;
+        if (!isHovering && !isManualScrolling) {
+          startAutoScroll();
+        }
+      }, 3000);
+    });
+
+    // 更新按钮状态
+    function updateButtons() {
+      const scrollLeft = slider.scrollLeft;
+      const maxScroll = slider.scrollWidth - slider.clientWidth;
+
+      gsap.to(prevBtn, {
+        opacity: scrollLeft <= 0 ? 0.3 : 1,
+        duration: 0.3,
+      });
+      prevBtn.style.pointerEvents = scrollLeft <= 0 ? 'none' : 'auto';
+
+      gsap.to(nextBtn, {
+        opacity: scrollLeft >= maxScroll - 5 ? 0.3 : 1,
+        duration: 0.3,
+      });
+      nextBtn.style.pointerEvents = scrollLeft >= maxScroll - 5 ? 'none' : 'auto';
+    }
+
+    updateButtons();
+  }
+</script>
+
+<style>
+  .fullscreen-categories {
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    background: #000;
+    padding: 5rem 0 6rem;
+    position: relative;
+  }
+
+  .container {
+    max-width: 100%;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding: 0 var(--spacing-lg);
+  }
+
+  .section-subtitle {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    color: var(--color-secondary);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  /* SplitText 字符样式 */
+  .cat-char {
+    display: inline-block;
+    transform-origin: bottom center;
+  }
+
+  .categories-wrapper {
+    position: relative;
+    padding: 0 var(--spacing-xl);
+  }
+
+  .categories-slider {
+    display: flex;
+    gap: 2.5rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 2rem 0 3rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    cursor: grab;
+  }
+
+  .categories-slider:active {
+    cursor: grabbing;
+  }
+
+  .categories-slider::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .categories-slider::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .categories-slider::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+  }
+
+  .categories-slider::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  .category-card {
+    flex: 0 0 calc((100vw - 10rem) / 3.2);
+    min-width: 380px;
+    max-width: 500px;
+    height: 520px;
+  }
+
+  .category-link {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .category-image {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease, opacity 0.3s;
+  }
+
+  .category-link:hover .category-image img {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+
+  .category-overlay {
+    position: absolute;
+    inset: 0;
+    
+  }
+
+  .category-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2.5rem;
+    color: var(--color-secondary);
+    z-index: 10;
+    transform: translateY(0);
+    transition: transform 0.3s;
+  }
+
+  .category-number {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.75rem;
+  }
+
+  .category-title {
+    font-size: 1.75rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .category-subtitle {
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+    margin-bottom: 1.25rem;
+  }
+
+  .category-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--color-secondary);
+    border-radius: 50%;
+    transition: all 0.3s;
+    opacity: 0;
+  }
+
+  .category-link:hover .category-arrow {
+    opacity: 1;
+    transform: translateX(10px);
+  }
+
+  /* 导航按钮 - 移到右下角 */
+  .nav-controls {
+    position: absolute;
+    bottom: 4rem;
+    right: var(--spacing-xl);
+    z-index: 100;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .nav-btn {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: var(--color-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .nav-btn:hover {
+    background: var(--color-secondary);
+    color: var(--color-primary);
+    transform: scale(1.1);
+    border-color: var(--color-secondary);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* 移除滚动提示 */
+  .scroll-hint {
+    display: none;
+  }
+
+  /* 响应式 */
+  @media (max-width: 1024px) {
+    .category-card {
+      flex: 0 0 300px;
+      height: 450px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .section-title{
+      font-size:clamp(1.5rem, 6vw, 1.8rem);
+    }
+    .fullscreen-categories {
+      min-height: auto;
+      padding-top: 10px;
+        padding-bottom: 10px;
+
+    }
+
+    .category-card {
+      flex: 0 0 calc((100vw - 3rem) / 1.5);
+      height: 420px;
+    }
+
+    .categories-wrapper {
+      padding: 0 var(--spacing-sm);
+    }
+
+    .categories-slider {
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+
+    .category-title {
+      font-size: 1.5rem;
+    }
+
+    .nav-controls {
+      bottom: 2rem;
+      right: var(--spacing-md);
+    }
+
+    .nav-btn {
+      width: 45px;
+      height: 45px;
+    }
+  }
+</style>

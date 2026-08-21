@@ -1,0 +1,105 @@
+---
+---
+
+<section class="features">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature" data-animate="fade-up" data-animate-delay="0">
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Quality Materials</h3>
+        <p class="feature-description">Premium steel and aluminum construction, built to withstand heavy-duty use</p>
+      </div>
+
+      <div class="feature" data-animate="fade-up" data-animate-delay="100">
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 7h-4l-2-2H10L8 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="13" r="3"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Engineered Design</h3>
+        <p class="feature-description">Precision engineering with ergonomic features for maximum efficiency and safety</p>
+      </div>
+
+      <div class="feature" data-animate="fade-up" data-animate-delay="200">
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Fast Shipping</h3>
+        <p class="feature-description">Worldwide delivery with tracking, ensuring your equipment arrives on time</p>
+      </div>
+
+      <div class="feature" data-animate="fade-up" data-animate-delay="300">
+        <div class="feature-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <h3 class="feature-title">Expert Support</h3>
+        <p class="feature-description">Professional team ready to help with product selection and technical support</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .features {
+    padding: var(--spacing-xl) 0;
+    background: #f8f8f8;
+  }
+
+  .container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+  }
+
+  .feature {
+    text-align: center;
+  }
+
+  .feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-accent);
+  }
+
+  .feature-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-primary);
+  }
+
+  .feature-description {
+    font-size: 0.95rem;
+    color: var(--color-text-light);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .features-grid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-md);
+    }
+  }
+</style>

@@ -1,0 +1,222 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+export const prerender = false;
+
+// Get WooCommerce URL from environment
+const WOOCOMMERCE_URL = import.meta.env.WOOCOMMERCE_URL || '';
+---
+
+<BaseLayout title="Checkout - IMAM HIJAB" description="Complete your purchase">
+  <Header />
+
+  <section class="redirect-page">
+    <div class="redirect-container">
+      <div class="redirect-content">
+        <!-- Loading Icon -->
+        <div class="loading-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+
+        <h1 class="redirect-title">Preparing your checkout...</h1>
+        <p class="redirect-message" id="status-message">
+          Syncing your cart with our secure checkout...
+        </p>
+
+        <!-- Manual link if redirect fails -->
+        <div class="manual-link" id="error-section" style="display: none;">
+          <p>If you're not redirected automatically,</p>
+          <a href="#" id="manual-checkout-link" class="checkout-link">
+            Click here to continue
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+</BaseLayout>
+
+<script define:vars={{ WOOCOMMERCE_URL }}>
+  async function syncCartAndRedirect() {
+    try {
+      const statusMessage = document.getElementById('status-message');
+      const errorSection = document.getElementById('error-section');
+      const manualLink = document.getElementById('manual-checkout-link');
+
+      // 1. 获取本地购物车数据（通过前端 API）
+      if (statusMessage) statusMessage.textContent = 'Loading your cart...';
+
+      const cartResponse = await fetch('/api/cart', {
+        credentials: 'include'
+      });
+
+      if (!cartResponse.ok) {
+        throw new Error('Failed to load cart');
+      }
+
+      const cart = await cartResponse.json();
+
+      if (!cart || !cart.items || cart.items.length === 0) {
+        if (statusMessage) statusMessage.textContent = 'Your cart is empty';
+        setTimeout(() => {
+          window.location.href = '/shop';
+        }, 2000);
+        return;
+      }
+
+      // 2. 使用 WooCommerce 的 add-to-cart URL 参数跳转
+      if (statusMessage) statusMessage.textContent = 'Preparing checkout...';
+
+      console.log('Cart items to sync:', cart.items);
+
+      // 构建 WooCommerce 购物车 URL
+      // 多个商品用 add-to-cart 和 quantity 数组
+      const params = new URLSearchParams();
+
+      // WooCommerce 支持多个商品：cart/?add-to-cart[]=149&quantity[]=2&add-to-cart[]=150&quantity[]=1
+      cart.items.forEach(item => {
+        params.append('add-to-cart[]', item.id.toString());
+        params.append('quantity[]', item.quantity.toString());
+      });
+
+      // 先跳转到购物车页面（添加商品），然后自动跳转到 checkout
+      const cartUrl = `${WOOCOMMERCE_URL}/cart/?${params.toString()}`;
+
+      console.log('Redirecting to:', cartUrl);
+
+      if (statusMessage) statusMessage.textContent = 'Redirecting to checkout...';
+
+      // 直接跳转
+      setTimeout(() => {
+        window.location.href = cartUrl;
+      }, 500);
+
+    } catch (error) {
+      console.error('Checkout error:', error);
+      const statusMessage = document.getElementById('status-message');
+      const errorSection = document.getElementById('error-section');
+      const manualLink = document.getElementById('manual-checkout-link');
+
+      if (statusMessage) {
+        statusMessage.textContent = 'Unable to sync cart. Please try again.';
+        statusMessage.style.color = '#e74c3c';
+      }
+      if (errorSection) errorSection.style.display = 'block';
+      if (manualLink) manualLink.href = `${WOOCOMMERCE_URL}/checkout`;
+    }
+  }
+
+  // 开始同步
+  syncCartAndRedirect();
+</script>
+
+<style>
+  .redirect-page {
+    min-height: 100vh;
+    background: #fafafa;
+    padding: 8rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .redirect-container {
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .redirect-content {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 4rem 3rem;
+    text-align: center;
+  }
+
+  .loading-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 2rem;
+    color: #000;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  .loading-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .redirect-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 1rem;
+  }
+
+  .redirect-message {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+  }
+
+  .manual-link {
+    padding-top: 2rem;
+    border-top: 1px solid #e5e5e5;
+  }
+
+  .manual-link p {
+    font-size: 0.9rem;
+    color: #999;
+    margin-bottom: 0.75rem;
+  }
+
+  .checkout-link {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    background: #000;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: all 0.3s;
+    letter-spacing: 0.02em;
+  }
+
+  .checkout-link:hover {
+    background: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  @media (max-width: 640px) {
+    .redirect-page {
+      padding: 6rem 1.5rem;
+    }
+
+    .redirect-content {
+      padding: 3rem 2rem;
+    }
+
+    .redirect-title {
+      font-size: 1.5rem;
+    }
+  }
+</style>

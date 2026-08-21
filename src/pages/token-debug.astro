@@ -1,0 +1,298 @@
+---
+export const prerender = false;
+---
+
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Token Debug</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section {
+      background: #252526;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border-left: 4px solid #d4af37;
+    }
+    h2 {
+      color: #d4af37;
+      margin-top: 0;
+    }
+    button {
+      background: #d4af37;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #c49d2e;
+    }
+    pre {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      border: 1px solid #3e3e42;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .error { color: #f48771; }
+    .success { color: #89d185; }
+    .warning { color: #dcdcaa; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Token & Session Debug</h1>
+
+  <div class="section">
+    <h2>1. Session Cookie 内容</h2>
+    <button id="btn-cookie">检查 Cookie</button>
+    <pre id="cookie-result">点击按钮查看...</pre>
+  </div>
+
+  <div class="section">
+    <h2>2. JWT Token 解析</h2>
+    <button id="btn-jwt">解析 JWT</button>
+    <pre id="jwt-result">点击按钮查看...</pre>
+  </div>
+
+  <div class="section">
+    <h2>3. Session API 返回</h2>
+    <button id="btn-session">检查 Session</button>
+    <pre id="session-result">点击按钮查看...</pre>
+  </div>
+
+  <div class="section">
+    <h2>4. 完整诊断</h2>
+    <button id="btn-diagnosis">运行完整诊断</button>
+    <pre id="diagnosis-result">点击按钮查看...</pre>
+  </div>
+
+  <script is:inline>
+    document.getElementById('btn-cookie').addEventListener('click', function() {
+      const result = document.getElementById('cookie-result');
+      const cookies = document.cookie.split(';');
+
+      let found = false;
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'woo_session') {
+          found = true;
+          try {
+            const decoded = atob(value);
+            const sessionObj = JSON.parse(decoded);
+
+            result.innerHTML = '<span class="success">✓ 找到 Session Cookie</span>\n\n' +
+              '<span class="warning">Base64 解码后:</span>\n' + JSON.stringify(sessionObj, null, 2);
+          } catch (e) {
+            result.innerHTML = '<span class="error">✗ Cookie 存在但解析失败</span>\n\n' + e.message;
+          }
+        }
+      }
+
+      if (!found) {
+        result.innerHTML = '<span class="error">✗ 未找到 woo_session cookie\n\n请先登录！</span>';
+      }
+    });
+
+    document.getElementById('btn-jwt').addEventListener('click', function() {
+      const result = document.getElementById('jwt-result');
+      const cookies = document.cookie.split(';');
+
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'woo_session') {
+          try {
+            const decoded = atob(value);
+            const sessionObj = JSON.parse(decoded);
+            const token = sessionObj.token;
+
+            if (!token) {
+              result.innerHTML = '<span class="error">✗ Session 中没有 token 字段</span>';
+              return;
+            }
+
+            // Parse JWT
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+              result.innerHTML = '<span class="error">✗ Token 格式不正确（应该有3部分）</span>';
+              return;
+            }
+
+            const header = JSON.parse(atob(parts[0]));
+            const payload = JSON.parse(atob(parts[1]));
+
+            result.innerHTML = '<span class="success">✓ JWT Token 解析成功</span>\n\n' +
+              '<span class="warning">Header:</span>\n' + JSON.stringify(header, null, 2) + '\n\n' +
+              '<span class="warning">Payload:</span>\n' + JSON.stringify(payload, null, 2) + '\n\n' +
+              '<span class="success">关键信息:</span>\n' +
+              '  User ID (sub): ' + payload.sub + '\n' +
+              '  Username (name): ' + (payload.name || 'N/A') + '\n' +
+              '  Issued At: ' + (payload.iat ? new Date(payload.iat * 1000).toLocaleString() : 'N/A') + '\n' +
+              '  Expires: ' + (payload.exp ? new Date(payload.exp * 1000).toLocaleString() : 'N/A');
+
+          } catch (e) {
+            result.innerHTML = '<span class="error">✗ 解析失败</span>\n\n' + e.message;
+          }
+          return;
+        }
+      }
+
+      result.innerHTML = '<span class="error">✗ 未找到 cookie</span>';
+    });
+
+    document.getElementById('btn-session').addEventListener('click', async function() {
+      const result = document.getElementById('session-result');
+      result.innerHTML = '加载中...';
+
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+
+        if (data.authenticated) {
+          result.innerHTML = '<span class="success">✓ 已认证</span>\n\n' +
+            JSON.stringify(data, null, 2);
+        } else {
+          result.innerHTML = '<span class="error">✗ 未认证</span>\n\n' +
+            JSON.stringify(data, null, 2);
+        }
+      } catch (e) {
+        result.innerHTML = '<span class="error">✗ 请求失败</span>\n\n' + e.message;
+      }
+    });
+
+    document.getElementById('btn-diagnosis').addEventListener('click', async function() {
+      const result = document.getElementById('diagnosis-result');
+      result.innerHTML = '运行诊断...\n\n';
+
+      let report = '';
+
+      // 1. Check cookie
+      report += '=== 1. Cookie 检查 ===\n';
+      const cookies = document.cookie.split(';');
+      let sessionObj = null;
+      let found = false;
+
+      for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'woo_session') {
+          found = true;
+          try {
+            const decoded = atob(value);
+            sessionObj = JSON.parse(decoded);
+            report += '✓ Cookie 存在并可解析\n';
+            report += '  userId: ' + sessionObj.userId + '\n';
+            report += '  username: ' + sessionObj.username + '\n';
+          } catch (e) {
+            report += '✗ Cookie 存在但解析失败: ' + e.message + '\n';
+          }
+        }
+      }
+
+      if (!found) {
+        report += '✗ 未找到 woo_session cookie\n';
+        result.innerHTML = '<span class="error">' + report + '</span>';
+        return;
+      }
+
+      // 2. Parse JWT
+      report += '\n=== 2. JWT Token 检查 ===\n';
+      if (sessionObj && sessionObj.token) {
+        try {
+          const parts = sessionObj.token.split('.');
+          const payload = JSON.parse(atob(parts[1]));
+          report += '✓ JWT 解析成功\n';
+          report += '  sub (User ID): ' + payload.sub + '\n';
+          report += '  name: ' + (payload.name || 'N/A') + '\n';
+
+          // Compare
+          if (String(payload.sub) === String(sessionObj.userId)) {
+            report += '  ✓ JWT sub 与 session userId 一致\n';
+          } else {
+            report += '  ✗ JWT sub (' + payload.sub + ') 与 session userId (' + sessionObj.userId + ') 不一致！\n';
+          }
+        } catch (e) {
+          report += '✗ JWT 解析失败: ' + e.message + '\n';
+        }
+      } else {
+        report += '✗ Session 中没有 token\n';
+      }
+
+      // 3. Check Session API
+      report += '\n=== 3. Session API 检查 ===\n';
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+
+        if (data.authenticated) {
+          report += '✓ Session API 返回已认证\n';
+          report += '  User ID: ' + data.user.id + '\n';
+          report += '  Username: ' + data.user.username + '\n';
+          report += '  Avatar: ' + data.user.avatar.substring(0, 50) + '...\n';
+
+          // Compare with cookie
+          if (sessionObj && String(data.user.id) === String(sessionObj.userId)) {
+            report += '  ✓ API 返回的 user ID 与 cookie 一致\n';
+          } else {
+            report += '  ✗ API 返回的 user ID (' + data.user.id + ') 与 cookie (' + (sessionObj ? sessionObj.userId : 'N/A') + ') 不一致！\n';
+          }
+        } else {
+          report += '✗ Session API 返回未认证\n';
+        }
+      } catch (e) {
+        report += '✗ Session API 请求失败: ' + e.message + '\n';
+      }
+
+      // 4. Check WordPress endpoint
+      report += '\n=== 4. WordPress 头像端点检查 ===\n';
+      if (sessionObj && sessionObj.token) {
+        try {
+          const wpResponse = await fetch('https://imanmlhijab.com/wp-json/custom/v1/get-avatar', {
+            headers: {
+              'Authorization': 'Bearer ' + sessionObj.token
+            }
+          });
+
+          const wpData = await wpResponse.json();
+
+          if (wpData.success) {
+            report += '✓ WordPress 端点响应成功\n';
+            report += '  User ID: ' + wpData.user_id + '\n';
+            report += '  Username: ' + (wpData.debug && wpData.debug.username ? wpData.debug.username : 'N/A') + '\n';
+            report += '  Auth Method: ' + (wpData.debug && wpData.debug.method ? wpData.debug.method : 'N/A') + '\n';
+            report += '  Source: ' + wpData.source + '\n';
+
+            // Compare
+            if (sessionObj && String(wpData.user_id) === String(sessionObj.userId)) {
+              report += '  ✓ WordPress 返回的 user ID 与 cookie 一致\n';
+            } else {
+              report += '  ✗ WordPress 返回的 user ID (' + wpData.user_id + ') 与 cookie (' + sessionObj.userId + ') 不一致！\n';
+            }
+          } else {
+            report += '✗ WordPress 端点返回失败\n';
+            report += JSON.stringify(wpData, null, 2);
+          }
+        } catch (e) {
+          report += '✗ WordPress 端点请求失败: ' + e.message + '\n';
+        }
+      }
+
+      report += '\n=== 诊断完成 ===\n';
+
+      result.textContent = report;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+import type { APIRoute } from 'astro';
+
+export const GET: APIRoute = async ({ request }) => {
+  const url = new URL(request.url);
+  const query = url.searchParams.get('q') || '';
+
+  if (!query.trim()) {
+    return new Response(JSON.stringify({ products: [] }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+
+  try {
+    const WOOCOMMERCE_URL = import.meta.env.WOOCOMMERCE_URL;
+
+    if (!WOOCOMMERCE_URL) {
+      console.error('WooCommerce URL not configured');
+      throw new Error('WooCommerce URL not configured');
+    }
+
+    // 使用 WooCommerce Store API (公开接口，无需认证)
+    const searchUrl = `${WOOCOMMERCE_URL}/wp-json/wc/store/v1/products?search=${encodeURIComponent(query)}&per_page=20`;
+
+    const response = await fetch(searchUrl);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('WooCommerce API error:', response.status, errorText);
+      throw new Error(`WooCommerce API error: ${response.status}`);
+    }
+
+    const products = await response.json();
+
+    // 格式化产品数据 - Store API 格式
+    const formattedProducts = products.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: (parseInt(product.prices.price) / 100).toFixed(2),
+      regular_price: (parseInt(product.prices.regular_price) / 100).toFixed(2),
+      sale_price: product.prices.sale_price ? (parseInt(product.prices.sale_price) / 100).toFixed(2) : null,
+      on_sale: product.on_sale,
+      images: product.images,
+      stock_status: product.is_in_stock ? 'instock' : 'outofstock',
+      categories: product.categories || [],
+    }));
+
+    return new Response(
+      JSON.stringify({
+        products: formattedProducts,
+        total: formattedProducts.length,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  } catch (error) {
+    console.error('Search API error:', error);
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to search products',
+        products: [],
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+};

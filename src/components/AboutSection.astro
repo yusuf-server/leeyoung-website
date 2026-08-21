@@ -1,0 +1,541 @@
+---
+---
+
+<section class="about-section">
+  <div class="about-container">
+
+    <!-- 左侧文字 -->
+    <div class="about-content" data-animate="fade-right">
+      <p class="about-eyebrow" data-about="eyebrow">ABOUT LEEYOUNG</p>
+      <h2 class="about-title" data-about="title">Built for Those<br/>Who Work Hard</h2>
+      <p class="about-description" data-about="desc1">
+        For over 25 years, LeeYoung has been engineering premium hand trucks and material handling equipment trusted by professionals across industries. Every product is precision-crafted to handle the demands of real-world use.
+      </p>
+      <p class="about-description" data-about="desc2">
+        From warehouses to job sites, our equipment is designed to move more, faster — with less effort and greater reliability. Because we believe the right tool makes all the difference.
+      </p>
+
+      <div class="about-stats">
+        <div class="stat" data-about="stat1">
+          <span class="stat-number" data-number="25">0</span>
+          <span class="stat-label">Years Experience</span>
+        </div>
+        <div class="stat" data-about="stat2">
+          <span class="stat-number" data-number="50000">0</span>
+          <span class="stat-label">Products Sold</span>
+        </div>
+        <div class="stat" data-about="stat3">
+          <span class="stat-number" data-number="98">0</span>
+          <span class="stat-label">Satisfaction Rate</span>
+        </div>
+      </div>
+
+      <div class="about-actions" data-about="actions">
+        <a href="#about" class="btn-primary">Learn More</a>
+        <a href="#products" class="btn-link">
+          View Products
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 右侧图片 -->
+    <div class="about-image-wrap" data-animate="fade-left">
+      <div class="about-image-main" data-about="image">
+        <video autoplay
+      muted
+      loop
+      playsinline
+          src="https://cms.leeyoungshop.com/wp-content/uploads/2026/08/home-about-video-m.mp4"
+          alt="LeeYoung Hand Truck"
+        />
+      </div>
+      <div class="about-image-badge" data-about="badge">
+        <span class="badge-number">25</span>
+        <span class="badge-text">Years of<br/>Excellence</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  import { gsap } from '../lib/gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { SplitText } from 'gsap/SplitText';
+
+  // 分割标题文字
+  const titleSplit = SplitText.create('[data-about="title"]', {
+    type: 'lines, words',
+    linesClass: 'line',
+    wordsClass: 'word',
+  });
+
+  // About Section 时间轴
+  const aboutTL = gsap.timeline({
+    scrollTrigger: {
+      trigger: '.about-section',
+      start: 'top 70%',
+      end: 'bottom 30%',
+      toggleActions: 'play none none reverse',
+    },
+  });
+
+  aboutTL
+    // Eyebrow 淡入
+    .from('[data-about="eyebrow"]', {
+      y: 30,
+      opacity: 0,
+      duration: 0.6,
+    })
+    // 标题单词逐个出现
+    .from(
+      titleSplit.words,
+      {
+        y: 50,
+        opacity: 0,
+        rotationX: -45,
+        stagger: 0.05,
+        duration: 0.8,
+        ease: 'back.out(1.2)',
+      },
+      '-=0.3'
+    )
+    // 描述段落
+    .from(
+      '[data-about="desc1"]',
+      {
+        y: 30,
+        opacity: 0,
+        duration: 0.6,
+      },
+      '-=0.4'
+    )
+    .from(
+      '[data-about="desc2"]',
+      {
+        y: 30,
+        opacity: 0,
+        duration: 0.6,
+      },
+      '-=0.4'
+    );
+
+  // 数字递增动画（带 ScrollTrigger）
+  const statNumbers = document.querySelectorAll('[data-number]');
+  statNumbers.forEach((el, index) => {
+    const targetValue = parseInt(el.getAttribute('data-number') || '0');
+    const isSuffix = el.textContent?.includes('+') || el.textContent?.includes('%');
+    const suffix = el.textContent?.includes('+') ? '+' : el.textContent?.includes('%') ? '%' : '';
+
+    const obj = { value: 0 };
+
+    gsap.to(obj, {
+      value: targetValue,
+      duration: 2,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 85%',
+        toggleActions: 'play none none reverse',
+      },
+      onUpdate() {
+        const formatted = targetValue >= 1000
+          ? (obj.value / 1000).toFixed(0) + 'K'
+          : Math.round(obj.value).toString();
+        el.textContent = formatted + suffix;
+      },
+    });
+  });
+
+  // 统计栏动画
+  gsap.from('[data-about="stat1"]', {
+    scrollTrigger: {
+      trigger: '.about-content',
+      start: 'top 75%',
+      toggleActions: 'play none none reverse',
+    },
+    x: -30,
+    opacity: 0,
+    duration: 0.6,
+    delay: 0.4,
+  });
+
+  gsap.from('[data-about="stat2"]', {
+    scrollTrigger: {
+      trigger: '.about-content',
+      start: 'top 75%',
+      toggleActions: 'play none none reverse',
+    },
+    y: 30,
+    opacity: 0,
+    duration: 0.6,
+    delay: 0.5,
+  });
+
+  gsap.from('[data-about="stat3"]', {
+    scrollTrigger: {
+      trigger: '.about-content',
+      start: 'top 75%',
+      toggleActions: 'play none none reverse',
+    },
+    x: 30,
+    opacity: 0,
+    duration: 0.6,
+    delay: 0.6,
+  });
+
+  // 按钮组动画
+  gsap.from('[data-about="actions"]', {
+    scrollTrigger: {
+      trigger: '.about-content',
+      start: 'top 75%',
+      toggleActions: 'play none none reverse',
+    },
+    y: 30,
+    opacity: 0,
+    duration: 0.6,
+    delay: 0.7,
+  });
+
+  // 右侧图片和徽章动画
+  const mm2 = gsap.matchMedia();
+
+  mm2.add("(min-width: 769px)", () => {
+    // 桌面端：使用缩放和透明度动画
+    gsap.from('[data-about="image"]', {
+      scrollTrigger: {
+        trigger: '.about-image-wrap',
+        start: 'top 80%',
+        toggleActions: 'play none none reverse',
+      },
+      scale: 0.95,
+      opacity: 0,
+      duration: 1,
+      ease: 'power2.out',
+    });
+  });
+
+  mm2.add("(max-width: 768px)", () => {
+    // 移动端：只使用透明度动画，不使用缩放
+    gsap.from('[data-about="image"]', {
+      scrollTrigger: {
+        trigger: '.about-image-wrap',
+        start: 'top 80%',
+        toggleActions: 'play none none reverse',
+      },
+      opacity: 0,
+      duration: 0.8,
+      ease: 'power2.out',
+    });
+  });
+
+  gsap.from('[data-about="badge"]', {
+    scrollTrigger: {
+      trigger: '.about-image-wrap',
+      start: 'top 80%',
+      toggleActions: 'play none none reverse',
+    },
+    scale: 0,
+    rotation: -180,
+    opacity: 0,
+    duration: 0.8,
+    delay: 0.3,
+    ease: 'back.out(1.7)',
+  });
+
+  // 视差效果 - 图片随滚动移动（仅桌面端）
+  const mm = gsap.matchMedia();
+
+  mm.add("(min-width: 769px)", () => {
+    gsap.to('[data-about="image"]', {
+      scrollTrigger: {
+        trigger: '.about-section',
+        start: 'top bottom',
+        end: 'bottom top',
+        scrub: 1,
+      },
+      y: -50,
+    });
+  });
+</script>
+
+<style>
+  .about-section {
+    background: #000;
+    padding: 8rem 0;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  .about-container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-xl);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8rem;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 左侧文字 */
+  .about-eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #fff;
+    margin-bottom: 1.5rem;
+  }
+
+  .about-title {
+    font-size: clamp(1.8rem, 3.5vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+  }
+
+  /* SplitText 样式 */
+  .word {
+    display: inline-block;
+    transform-origin: bottom left;
+  }
+
+  .about-description {
+    font-size: 0.95rem;
+    color: #fff;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+
+  /* 数字统计 */
+  .about-stats {
+    display: flex;
+    gap: 3rem;
+    margin: 3rem 0;
+    padding: 2.5rem 0;
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #fff;
+  }
+
+  /* 按钮 */
+  .about-actions {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    background: #000;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.3s;
+    text-decoration: none;
+  }
+
+  .btn-primary:hover {
+    background: #333;
+    transform: translateX(5px);
+  }
+
+  .btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #000;
+    text-decoration: none;
+    transition: gap 0.3s;
+  }
+
+  .btn-link:hover {
+    gap: 1rem;
+  }
+
+  /* 右侧图片 */
+  .about-image-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .about-image-main {
+    width: 100%;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+  }
+
+  .about-image-main video,
+  .about-image-main img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s ease;
+  }
+
+  .about-image-wrap:hover .about-image-main img {
+    transform: scale(1.05);
+  }
+
+  /* 年份徽章 */
+  .about-image-badge {
+    position: absolute;
+    bottom: -2rem;
+    left: -2rem;
+    background: #000;
+    color: #fff;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 130px;
+  }
+
+  .badge-number {
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .badge-text {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: center;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* 响应式 */
+  @media (max-width: 1024px) {
+    .about-container {
+      gap: 5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .about-section {
+      padding: 4rem 0;
+      overflow-x: hidden;
+    }
+
+    .about-container {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      padding: 0 1rem;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    .about-content {
+      max-width: 100%;
+    }
+
+    .about-eyebrow {
+      font-size: 0.65rem;
+    }
+
+    .about-title {
+      font-size: clamp(1.5rem, 6vw, 1.8rem);
+      margin-bottom: 1.5rem;
+      max-width: 100%;
+      word-wrap: break-word;
+    }
+
+    .about-description {
+      font-size: 0.875rem;
+      margin-bottom: 1.25rem;
+      max-width: 100%;
+    }
+
+    .about-image-wrap {
+      order: -1;
+      max-width: 100%;
+      overflow: hidden;
+      position: relative;
+      touch-action: pan-y;
+    }
+
+    .about-image-main {
+      max-width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .about-image-badge {
+      bottom: -1.5rem;
+      left: -1rem;
+      padding: 1.5rem;
+      min-width: 110px;
+    }
+
+    .badge-number {
+      font-size: 2.5rem;
+    }
+
+    .about-stats {
+      gap: 1.5rem;
+      margin: 2rem 0;
+      padding: 2rem 0;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .about-stats::-webkit-scrollbar {
+      display: none;
+    }
+
+    .stat-number {
+      font-size: 1.75rem;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+    }
+
+    .about-actions {
+      flex-wrap: wrap;
+    }
+  }
+</style>

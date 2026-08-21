@@ -1,0 +1,437 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avatar Debug - LEEYOUNG</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 40px;
+    }
+    .test-section {
+      margin-bottom: 40px;
+      padding: 25px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border-left: 4px solid #d4af37;
+    }
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    button {
+      background: #d4af37;
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #c49d2e;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+    }
+    .result pre {
+      margin: 10px 0 0 0;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+    }
+    .avatar-preview {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      margin-top: 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #f0f0f0;
+    }
+    .avatar-preview img {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #d4af37;
+    }
+    .user-info {
+      flex: 1;
+    }
+    .user-info div {
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+    .label {
+      font-weight: 600;
+      color: #666;
+      display: inline-block;
+      width: 120px;
+    }
+    .value {
+      color: #333;
+    }
+    .error {
+      color: #c62828;
+      background: #ffebee;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      border-left: 4px solid #c62828;
+    }
+    .success {
+      color: #2e7d32;
+      background: #e8f5e9;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      border-left: 4px solid #2e7d32;
+    }
+    .warning {
+      color: #f57c00;
+      background: #fff3e0;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+      border-left: 4px solid #f57c00;
+    }
+    .compare-table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .compare-table th,
+    .compare-table td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #e0e0e0;
+    }
+    .compare-table th {
+      background: #f5f5f5;
+      font-weight: 600;
+      color: #333;
+    }
+    .compare-table td {
+      word-break: break-all;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      color: #d4af37;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Avatar Debug Tool</h1>
+    <p class="subtitle">诊断头像显示问题 - 检查不同用户的头像是否正确显示</p>
+
+    <!-- Test 1: Check Session -->
+    <div class="test-section">
+      <h2>1. 检查当前用户信息</h2>
+      <p style="color: #666; margin-bottom: 15px;">查看当前登录用户的 Session 信息和头像</p>
+      <button onclick="checkSession()">检查 Session</button>
+      <div id="session-result"></div>
+    </div>
+
+    <!-- Test 2: Check WordPress Avatar -->
+    <div class="test-section">
+      <h2>2. 检查 WordPress 头像端点</h2>
+      <p style="color: #666; margin-bottom: 15px;">直接从 WordPress 获取当前用户的头像</p>
+      <button onclick="checkWordPressAvatar()">获取 WordPress 头像</button>
+      <div id="wp-avatar-result"></div>
+    </div>
+
+    <!-- Test 3: Compare -->
+    <div class="test-section">
+      <h2>3. 对比分析</h2>
+      <p style="color: #666; margin-bottom: 15px;">对比两个端点返回的数据，检查是否一致</p>
+      <button onclick="compareData()">开始对比</button>
+      <div id="compare-result"></div>
+    </div>
+
+    <!-- Test 4: Instructions -->
+    <div class="test-section">
+      <h2>4. 问题排查步骤</h2>
+      <ol style="line-height: 2; color: #333;">
+        <li>使用<strong>用户 A</strong> 登录，上传头像</li>
+        <li>点击上面的"检查 Session"和"获取 WordPress 头像"</li>
+        <li>记录用户 A 的 <code>user_id</code></li>
+        <li>退出登录</li>
+        <li>使用<strong>用户 B</strong> 登录</li>
+        <li>再次点击"检查 Session"和"获取 WordPress 头像"</li>
+        <li>对比用户 B 看到的头像 URL 和 user_id</li>
+        <li>如果用户 B 看到了用户 A 的头像，说明有缓存或用户识别问题</li>
+      </ol>
+    </div>
+
+    <a href="/" class="back-link">← 返回首页</a>
+  </div>
+
+  <script>
+    async function checkSession() {
+      const resultDiv = document.getElementById('session-result');
+      resultDiv.innerHTML = '<p style="color: #666;">加载中...</p>';
+
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+
+        if (data.authenticated) {
+          resultDiv.innerHTML = `
+            <div class="success">✓ 已登录</div>
+            <div class="avatar-preview">
+              <img src="${data.user.avatar}?t=${Date.now()}" alt="Avatar" onerror="this.src='https://ui-avatars.com/api/?name=Error&background=ff0000&color=fff'" />
+              <div class="user-info">
+                <div><span class="label">用户 ID:</span><span class="value">${data.user.id}</span></div>
+                <div><span class="label">用户名:</span><span class="value">${data.user.username}</span></div>
+                <div><span class="label">邮箱:</span><span class="value">${data.user.email}</span></div>
+                <div><span class="label">显示名称:</span><span class="value">${data.user.name}</span></div>
+              </div>
+            </div>
+            <div class="result">
+              <strong>完整 Session 数据:</strong>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            </div>
+          `;
+        } else {
+          resultDiv.innerHTML = '<div class="error">✗ 未登录 - 请先登录再测试</div>';
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="error">错误: ${error.message}</div>`;
+      }
+    }
+
+    async function checkWordPressAvatar() {
+      const resultDiv = document.getElementById('wp-avatar-result');
+      resultDiv.innerHTML = '<p style="color: #666;">加载中...</p>';
+
+      try {
+        const sessionResponse = await fetch('/api/auth/session');
+        const sessionData = await sessionResponse.json();
+
+        if (!sessionData.authenticated) {
+          resultDiv.innerHTML = '<div class="error">✗ 未登录，无法测试 WordPress 端点</div>';
+          return;
+        }
+
+        // Get token from cookie
+        const cookies = document.cookie.split(';');
+        let token = null;
+
+        for (let cookie of cookies) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === 'woo_session') {
+            try {
+              const sessionToken = atob(value);
+              const sessionObj = JSON.parse(sessionToken);
+              token = sessionObj.token;
+            } catch (e) {
+              console.error('Failed to parse session cookie:', e);
+            }
+          }
+        }
+
+        if (!token) {
+          resultDiv.innerHTML = '<div class="error">✗ 无法获取 JWT token</div>';
+          return;
+        }
+
+        // Call WordPress endpoint
+        const wpResponse = await fetch('https://imanmlhijab.com/wp-json/custom/v1/get-avatar', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const wpData = await wpResponse.json();
+
+        if (wpData.success) {
+          const sourceText = wpData.source === 'custom' ? '✓ 自定义上传' : '⚠ 默认头像（未上传）';
+          const sourceClass = wpData.source === 'custom' ? 'success' : 'warning';
+
+          resultDiv.innerHTML = `
+            <div class="${sourceClass}">${sourceText}</div>
+            <div class="avatar-preview">
+              <img src="${wpData.avatar_url}?t=${Date.now()}" alt="WordPress Avatar" onerror="this.src='https://ui-avatars.com/api/?name=Error&background=ff0000&color=fff'" />
+              <div class="user-info">
+                <div><span class="label">用户 ID:</span><span class="value">${wpData.user_id}</span></div>
+                <div><span class="label">来源:</span><span class="value">${wpData.source}</span></div>
+                ${wpData.avatar_id ? `<div><span class="label">附件 ID:</span><span class="value">${wpData.avatar_id}</span></div>` : ''}
+                ${wpData.debug ? `<div><span class="label">识别方式:</span><span class="value">${wpData.debug.method || 'unknown'}</span></div>` : ''}
+                ${wpData.debug && wpData.debug.username ? `<div><span class="label">WordPress 用户名:</span><span class="value">${wpData.debug.username}</span></div>` : ''}
+              </div>
+            </div>
+            <div class="result">
+              <strong>完整 WordPress 响应:</strong>
+              <pre>${JSON.stringify(wpData, null, 2)}</pre>
+            </div>
+          `;
+        } else {
+          resultDiv.innerHTML = `<div class="error">✗ WordPress 端点返回失败<br><pre>${JSON.stringify(wpData, null, 2)}</pre></div>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="error">错误: ${error.message}</div>`;
+      }
+    }
+
+    async function compareData() {
+      const resultDiv = document.getElementById('compare-result');
+      resultDiv.innerHTML = '<p style="color: #666;">分析中...</p>';
+
+      try {
+        const sessionResponse = await fetch('/api/auth/session');
+        const sessionData = await sessionResponse.json();
+
+        if (!sessionData.authenticated) {
+          resultDiv.innerHTML = '<div class="error">✗ 未登录</div>';
+          return;
+        }
+
+        // Get WordPress data
+        const cookies = document.cookie.split(';');
+        let token = null;
+        for (let cookie of cookies) {
+          const [name, value] = cookie.trim().split('=');
+          if (name === 'woo_session') {
+            try {
+              const sessionToken = atob(value);
+              const sessionObj = JSON.parse(sessionToken);
+              token = sessionObj.token;
+            } catch (e) {}
+          }
+        }
+
+        let wpData = null;
+        if (token) {
+          const wpResponse = await fetch('https://imanmlhijab.com/wp-json/custom/v1/get-avatar', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          wpData = await wpResponse.json();
+        }
+
+        let issues = [];
+        let warnings = [];
+
+        // Check user ID
+        if (wpData && wpData.user_id !== sessionData.user.id) {
+          issues.push(`❌ 用户 ID 不匹配！Session 返回: ${sessionData.user.id}, WordPress 返回: ${wpData.user_id}`);
+        } else if (wpData) {
+          warnings.push(`✓ 用户 ID 一致: ${sessionData.user.id}`);
+        }
+
+        // Check avatar URL
+        if (wpData && wpData.avatar_url !== sessionData.user.avatar) {
+          issues.push(`⚠️ 头像 URL 不一致 - 可能是缓存问题或数据源不同`);
+        } else if (wpData) {
+          warnings.push(`✓ 头像 URL 一致`);
+        }
+
+        let html = '<h3 style="margin-top: 0;">对比结果</h3>';
+
+        if (issues.length > 0) {
+          html += '<div class="error"><strong>发现问题:</strong><br>' + issues.join('<br>') + '</div>';
+        }
+
+        if (warnings.length > 0) {
+          html += '<div class="success">' + warnings.join('<br>') + '</div>';
+        }
+
+        html += `
+          <table class="compare-table">
+            <tr>
+              <th>数据项</th>
+              <th>Session API</th>
+              <th>WordPress 端点</th>
+              <th>状态</th>
+            </tr>
+            <tr>
+              <td><strong>用户 ID</strong></td>
+              <td>${sessionData.user.id}</td>
+              <td>${wpData ? wpData.user_id : 'N/A'}</td>
+              <td>${wpData && wpData.user_id === sessionData.user.id ? '✓ 匹配' : '❌ 不匹配'}</td>
+            </tr>
+            <tr>
+              <td><strong>用户名</strong></td>
+              <td>${sessionData.user.username}</td>
+              <td>${wpData && wpData.debug ? wpData.debug.username : 'N/A'}</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><strong>头像来源</strong></td>
+              <td>-</td>
+              <td>${wpData ? wpData.source : 'N/A'}</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><strong>头像 URL</strong></td>
+              <td style="font-size: 11px;">${sessionData.user.avatar}</td>
+              <td style="font-size: 11px;">${wpData ? wpData.avatar_url : 'N/A'}</td>
+              <td>${wpData && wpData.avatar_url === sessionData.user.avatar ? '✓ 一致' : '⚠️ 不同'}</td>
+            </tr>
+          </table>
+        `;
+
+        if (wpData && wpData.source === 'default') {
+          html += '<div class="warning" style="margin-top: 20px;"><strong>提示:</strong> 当前用户使用默认头像（未上传自定义头像）</div>';
+        }
+
+        resultDiv.innerHTML = html;
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="error">错误: ${error.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

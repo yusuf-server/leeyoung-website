@@ -1,0 +1,99 @@
+---
+const marqueeItems = [
+  'PREMIUM HAND TRUCKS',
+  'LIFETIME WARRANTY',
+  'MADE IN USA',
+  'OVER 25 YEARS EXPERIENCE',
+  'ENGINEERED PRECISION',
+  'INDUSTRIAL GRADE',
+  'FREE SHIPPING',
+  'HANDCRAFTED QUALITY',
+];
+---
+
+<section class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-inner" data-marquee="inner">
+      {marqueeItems.map((item) => (
+        <span class="marquee-item">
+          <span class="marquee-dot">✦</span>
+          {item}
+        </span>
+      ))}
+      {/* 复制一遍实现无限循环 */}
+      {marqueeItems.map((item) => (
+        <span class="marquee-item">
+          <span class="marquee-dot">✦</span>
+          {item}
+        </span>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from '../lib/gsap';
+
+  const marqueeInner = document.querySelector('[data-marquee="inner"]') as HTMLElement;
+
+  if (marqueeInner) {
+    // 计算总宽度（一半，因为内容重复了两次）
+    const items = marqueeInner.querySelectorAll('.marquee-item');
+    const halfLength = items.length / 2;
+
+    // GSAP 无缝循环动画
+    const marqueeAnimation = gsap.to(marqueeInner, {
+      x: '-50%',
+      duration: 30,
+      ease: 'none',
+      repeat: -1,
+    });
+
+    // 鼠标悬停暂停
+    marqueeInner.addEventListener('mouseenter', () => {
+      gsap.to(marqueeAnimation, { timeScale: 0, duration: 0.5 });
+    });
+
+    marqueeInner.addEventListener('mouseleave', () => {
+      gsap.to(marqueeAnimation, { timeScale: 1, duration: 0.5 });
+    });
+  }
+</script>
+
+<style>
+  .marquee-section {
+    background: #fff;
+    padding: 1.25rem 0;
+    overflow: hidden;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .marquee-track {
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .marquee-inner {
+    display: inline-flex;
+    will-change: transform;
+  }
+
+  .marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #000;
+    padding: 0 2.5rem;
+    white-space: nowrap;
+  }
+
+  .marquee-dot {
+    color: #000;
+    font-size: 0.6rem;
+  }
+</style>

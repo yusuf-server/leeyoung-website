@@ -1,0 +1,432 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+const WORDPRESS_URL = import.meta.env.WOOCOMMERCE_URL || 'https://cms.leeyoungshop.com';
+const { slug } = Astro.params;
+
+interface Post {
+  id: number;
+  title: {
+    rendered: string;
+  };
+  content: {
+    rendered: string;
+  };
+  date: string;
+  slug: string;
+  _embedded?: {
+    'wp:featuredmedia'?: Array<{
+      source_url: string;
+      alt_text: string;
+    }>;
+    author?: Array<{
+      name: string;
+    }>;
+  };
+}
+
+let post: Post | null = null;
+let error = '';
+
+try {
+  // 使用 WordPress REST API 获取单个文章
+  const response = await fetch(
+    `${WORDPRESS_URL}/wp-json/wp/v2/posts?slug=${slug}&_embed`
+  );
+
+  if (!response.ok) {
+    throw new Error(`WordPress API returned status ${response.status}`);
+  }
+
+  const posts: Post[] = await response.json();
+  post = posts.length > 0 ? posts[0] : null;
+
+  if (!post) {
+    error = 'Article not found';
+  }
+} catch (e) {
+  error = e instanceof Error ? e.message : 'Unable to load article';
+  console.error('WordPress API Error:', error);
+}
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+  return date.toLocaleDateString('en-US', options);
+}
+
+// 辅助函数
+function getFeaturedImage(post: Post) {
+  return post._embedded?.['wp:featuredmedia']?.[0];
+}
+
+function getAuthor(post: Post) {
+  return post._embedded?.author?.[0]?.name || 'Anonymous';
+}
+
+if (!post && !error) {
+  return Astro.redirect('/blog');
+}
+---
+
+<BaseLayout
+  title={post ? `${post.title.rendered} - IMAM HIJAB` : 'Article Not Found'}
+  description={post ? post.title.rendered : 'Article not found'}
+>
+  <Header />
+
+  <main class="post-page">
+    {error && (
+      <div class="error-container">
+        <div class="error-content">
+          <h1>Unable to Load Article</h1>
+          <p>{error}</p>
+          <a href="/blog" class="back-link">← Back to Blog</a>
+        </div>
+      </div>
+    )}
+
+    {post && (
+      <article class="post-article">
+        <!-- Hero Section -->
+        <header class="post-header">
+          <div class="header-content">
+            <a href="/blog" class="back-link">← Back to Blog</a>
+
+            <div class="post-meta">
+              <time class="post-date">{formatDate(post.date)}</time>
+              <span class="meta-separator">•</span>
+              <span class="post-author">By {getAuthor(post)}</span>
+            </div>
+
+            <h1 class="post-title" set:html={post.title.rendered} />
+          </div>
+
+          {getFeaturedImage(post) && (
+            <div class="post-hero-image">
+              <img
+                src={getFeaturedImage(post)!.source_url}
+                alt={getFeaturedImage(post)!.alt_text || post.title.rendered}
+                loading="eager"
+              />
+            </div>
+          )}
+        </header>
+
+        <!-- Content -->
+        <div class="post-content">
+          <div class="content-wrapper" set:html={post.content.rendered} />
+        </div>
+
+        <!-- Footer Navigation -->
+        <footer class="post-footer">
+          <a href="/blog" class="back-to-blog">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back to All Articles</span>
+          </a>
+        </footer>
+      </article>
+    )}
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .post-page {
+    min-height: 100vh;
+    background: #fafafa;
+    padding-top: 80px;
+  }
+
+  /* Error State */
+  .error-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+    text-align: center;
+  }
+
+  .error-content h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 1rem;
+  }
+
+  .error-content p {
+    color: #666;
+    margin-bottom: 2rem;
+  }
+
+  /* Post Article */
+  .post-article {
+    background: #fff;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .post-header {
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 2rem 2rem;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #666;
+    text-decoration: none;
+    margin-bottom: 2rem;
+    transition: color 0.3s;
+  }
+
+  .back-link:hover {
+    color: #000;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+  }
+
+  .meta-separator {
+    color: #ddd;
+  }
+
+  .post-date {
+    font-weight: 500;
+  }
+
+  .post-author {
+    font-weight: 500;
+  }
+
+  .post-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 400;
+    line-height: 1.15;
+    color: #000;
+    letter-spacing: -0.02em;
+    margin-bottom: 0;
+  }
+
+  .post-hero-image {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+
+  .post-hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Content */
+  .post-content {
+    background: #fff;
+    padding: 4rem 2rem;
+  }
+
+  .content-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #333;
+  }
+
+  .content-wrapper :global(p) {
+    margin-bottom: 1.5rem;
+  }
+
+  .content-wrapper :global(h2) {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #000;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .content-wrapper :global(h3) {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #000;
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  .content-wrapper :global(h4) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #000;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .content-wrapper :global(ul),
+  .content-wrapper :global(ol) {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  .content-wrapper :global(li) {
+    margin-bottom: 0.75rem;
+  }
+
+  .content-wrapper :global(blockquote) {
+    border-left: 4px solid #000;
+    padding-left: 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: #666;
+    font-size: 1.15rem;
+  }
+
+  .content-wrapper :global(a) {
+    color: #000;
+    text-decoration: underline;
+    transition: opacity 0.3s;
+  }
+
+  .content-wrapper :global(a:hover) {
+    opacity: 0.7;
+  }
+
+  .content-wrapper :global(img) {
+    max-width: 100%;
+    height: auto;
+    margin: 2.5rem 0;
+    border-radius: 8px;
+  }
+
+  .content-wrapper :global(pre) {
+    background: #f5f5f5;
+    padding: 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 2rem 0;
+    font-size: 0.9rem;
+  }
+
+  .content-wrapper :global(code) {
+    background: #f5f5f5;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+  }
+
+  .content-wrapper :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+
+  /* Footer */
+  .post-footer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 2rem 4rem;
+    border-top: 1px solid #e5e5e5;
+  }
+
+  .back-to-blog {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: #000;
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+
+  .back-to-blog:hover {
+    background: #333;
+    gap: 1rem;
+  }
+
+  .back-to-blog svg {
+    transition: transform 0.3s;
+  }
+
+  .back-to-blog:hover svg {
+    transform: translateX(-3px);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .post-page {
+      padding-top: 60px;
+    }
+
+    .header-content {
+      padding: 2rem 1.5rem 1.5rem;
+    }
+
+    .post-content {
+      padding: 3rem 1.5rem;
+    }
+
+    .content-wrapper {
+      font-size: 1rem;
+    }
+
+    .content-wrapper :global(h2) {
+      font-size: 1.75rem;
+      margin-top: 2.5rem;
+    }
+
+    .content-wrapper :global(h3) {
+      font-size: 1.35rem;
+      margin-top: 2rem;
+    }
+
+    .post-footer {
+      padding: 2rem 1.5rem 3rem;
+    }
+
+    .back-to-blog {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

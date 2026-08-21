@@ -1,0 +1,404 @@
+---
+// Testimonials 组件 - 客户评价
+const testimonials = [
+  {
+    text: "These hand trucks have transformed our warehouse operations. The smooth-rolling wheels and sturdy construction make moving heavy loads effortless. Best investment we've made!",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "Sarah Mitchell",
+    role: "Warehouse Manager",
+  },
+  {
+    text: "We've been using LEEYOUNG hand trucks for over 2 years. The durability is outstanding - still looks brand new despite daily heavy use. Worth every penny!",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "Michael Chen",
+    role: "Logistics Coordinator",
+  },
+  {
+    text: "The folding design is genius! Easy to store when not in use, and the aluminum construction makes it lightweight yet incredibly strong. Perfect for our delivery business.",
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "Jessica Rodriguez",
+    role: "Delivery Service Owner",
+  },
+  {
+    text: "Exceptional quality and customer service. The heavy-duty model handles 500+ lbs with ease. Our team loves how maneuverable these carts are in tight spaces.",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "David Thompson",
+    role: "Operations Director",
+  },
+  {
+    text: "We purchased 15 units for our facility. The pneumatic tires work great on rough surfaces, and the ergonomic handle design reduces worker fatigue significantly.",
+    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "Emily Patel",
+    role: "Facility Manager",
+  },
+  {
+    text: "Best hand trucks on the market. The anti-slip surface and secure straps keep our equipment safe during transport. Highly recommend for industrial use!",
+    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "Robert Kim",
+    role: "Plant Supervisor",
+  },
+  {
+    text: "Smooth operation and excellent weight distribution. We use these daily for moving appliances - never had a single issue. The build quality is impressive.",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "Amanda Foster",
+    role: "Appliance Store Manager",
+  },
+  {
+    text: "The stair climber wheels are a game-changer! Makes deliveries to upper floors so much easier. Our customers are impressed by how professional and efficient we've become.",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "Carlos Martinez",
+    role: "Moving Company Owner",
+  },
+  {
+    text: "Purchased for our e-commerce fulfillment center. The carts handle high-volume daily use perfectly. Great value for money and the warranty coverage is excellent!",
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150&h=150",
+    name: "Lisa Anderson",
+    role: "E-commerce Operations Lead",
+  },
+];
+
+const firstColumn = testimonials.slice(0, 3);
+const secondColumn = testimonials.slice(3, 6);
+const thirdColumn = testimonials.slice(6, 9);
+---
+
+<section class="testimonials-section" data-testimonials-section>
+  <div class="container">
+    <div class="testimonials-header" data-testimonials-header>
+      <div class="section-badge">Customer Reviews</div>
+      <h2 class="section-title">What Our Customers Say</h2>
+      <p class="section-description">
+        Trusted by thousands of businesses worldwide for reliable, heavy-duty hand trucks and material handling equipment.
+      </p>
+    </div>
+
+    <div class="testimonials-columns" data-testimonials-columns>
+      <!-- Column 1 -->
+      <div class="testimonials-column" data-column="1">
+        {[...firstColumn, ...firstColumn].map((testimonial, index) => (
+          <div class="testimonial-card" data-testimonial-card>
+            <blockquote>
+              <p class="testimonial-text">{testimonial.text}</p>
+              <footer class="testimonial-footer">
+                <img
+                  src={testimonial.image}
+                  alt={testimonial.name}
+                  class="testimonial-avatar"
+                  loading="lazy"
+                />
+                <div class="testimonial-author">
+                  <cite class="author-name">{testimonial.name}</cite>
+                  <span class="author-role">{testimonial.role}</span>
+                </div>
+              </footer>
+            </blockquote>
+          </div>
+        ))}
+      </div>
+
+      <!-- Column 2 (Hidden on mobile) -->
+      <div class="testimonials-column column-2" data-column="2">
+        {[...secondColumn, ...secondColumn].map((testimonial, index) => (
+          <div class="testimonial-card" data-testimonial-card>
+            <blockquote>
+              <p class="testimonial-text">{testimonial.text}</p>
+              <footer class="testimonial-footer">
+                <img
+                  src={testimonial.image}
+                  alt={testimonial.name}
+                  class="testimonial-avatar"
+                  loading="lazy"
+                />
+                <div class="testimonial-author">
+                  <cite class="author-name">{testimonial.name}</cite>
+                  <span class="author-role">{testimonial.role}</span>
+                </div>
+              </footer>
+            </blockquote>
+          </div>
+        ))}
+      </div>
+
+      <!-- Column 3 (Hidden on mobile and tablet) -->
+      <div class="testimonials-column column-3" data-column="3">
+        {[...thirdColumn, ...thirdColumn].map((testimonial, index) => (
+          <div class="testimonial-card" data-testimonial-card>
+            <blockquote>
+              <p class="testimonial-text">{testimonial.text}</p>
+              <footer class="testimonial-footer">
+                <img
+                  src={testimonial.image}
+                  alt={testimonial.name}
+                  class="testimonial-avatar"
+                  loading="lazy"
+                />
+                <div class="testimonial-author">
+                  <cite class="author-name">{testimonial.name}</cite>
+                  <span class="author-role">{testimonial.role}</span>
+                </div>
+              </footer>
+            </blockquote>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .testimonials-section {
+    background: #000;
+    padding: 6rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* Header */
+  .testimonials-header {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 4rem;
+  }
+
+  .section-badge {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .section-description {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.6;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  /* Columns Container */
+  .testimonials-columns {
+    display: flex;
+    gap: 1.5rem;
+    max-height: 740px;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  }
+
+  .testimonials-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .column-2 {
+    display: none;
+  }
+
+  .column-3 {
+    display: none;
+  }
+
+  /* Testimonial Card */
+  .testimonial-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    transition: all 0.3s ease;
+    cursor: default;
+    flex-shrink: 0;
+  }
+
+  .testimonial-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(212, 175, 55, 0.3);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+
+  blockquote {
+    margin: 0;
+    padding: 0;
+  }
+
+  .testimonial-text {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 1.5rem 0;
+  }
+
+  .testimonial-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .testimonial-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: border-color 0.3s;
+  }
+
+  .testimonial-card:hover .testimonial-avatar {
+    border-color: rgba(212, 175, 55, 0.5);
+  }
+
+  .testimonial-author {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .author-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #fff;
+    font-style: normal;
+    line-height: 1.3;
+  }
+
+  .author-role {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.3;
+  }
+
+  /* Tablet */
+  @media (min-width: 768px) {
+    .column-2 {
+      display: flex;
+    }
+  }
+
+  /* Desktop */
+  @media (min-width: 1024px) {
+    .column-3 {
+      display: flex;
+    }
+  }
+
+  /* Mobile Optimization */
+  @media (max-width: 767px) {
+    .testimonials-section {
+      padding: 4rem 0;
+    }
+
+    .container {
+      padding: 0 1rem;
+    }
+
+    .testimonials-header {
+      margin-bottom: 3rem;
+    }
+
+    .section-title {
+      font-size: 2rem;
+    }
+
+    .section-description {
+      font-size: 1rem;
+    }
+
+    .testimonials-columns {
+      max-height: 600px;
+    }
+
+    .testimonial-card {
+      padding: 1.5rem;
+    }
+
+    .testimonial-text {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from '../lib/gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Header Animation
+  const header = document.querySelector('[data-testimonials-header]');
+  if (header) {
+    gsap.from(header.children, {
+      scrollTrigger: {
+        trigger: header,
+        start: 'top 80%',
+      },
+      opacity: 0,
+      y: 50,
+      stagger: 0.2,
+      duration: 0.8,
+      ease: 'power2.out',
+    });
+  }
+
+  // Infinite Scroll Animation for Each Column
+  const columns = document.querySelectorAll('[data-column]');
+
+  columns.forEach((column, index) => {
+    const cards = column.querySelectorAll('[data-testimonial-card]');
+    const totalHeight = Array.from(cards).slice(0, cards.length / 2).reduce((sum, card) => {
+      return sum + card.offsetHeight + 24; // 24 = gap
+    }, 0);
+
+    // Different speeds for each column
+    const durations = [15, 19, 17];
+    const duration = durations[index] || 15;
+
+    gsap.to(column, {
+      y: -totalHeight,
+      duration: duration,
+      ease: 'none',
+      repeat: -1,
+    });
+  });
+
+  // Card Hover Effect Enhancement
+  const cards = document.querySelectorAll('[data-testimonial-card]');
+  cards.forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      gsap.to(card, {
+        scale: 1.02,
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+    });
+
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, {
+        scale: 1,
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+    });
+  });
+</script>
