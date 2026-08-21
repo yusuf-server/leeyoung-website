@@ -6,18 +6,35 @@ if (!WOOCOMMERCE_URL || !CONSUMER_KEY || !CONSUMER_SECRET) {
   throw new Error('Missing WooCommerce configuration in .env file');
 }
 
+/**
+ * Helper function to build WooCommerce API URL with authentication
+ * Uses URL parameters instead of Basic Auth for better compatibility
+ */
+export function buildWooCommerceUrl(endpoint: string, additionalParams?: Record<string, string>): string {
+  const url = new URL(`${WOOCOMMERCE_URL}/wp-json/wc/v3${endpoint}`);
+
+  // Add authentication
+  url.searchParams.append('consumer_key', CONSUMER_KEY);
+  url.searchParams.append('consumer_secret', CONSUMER_SECRET);
+
+  // Add additional parameters
+  if (additionalParams) {
+    Object.entries(additionalParams).forEach(([key, value]) => {
+      url.searchParams.append(key, value);
+    });
+  }
+
+  return url.toString();
+}
+
 // WooCommerce REST API 基础请求函数
 export async function wooCommerceRequest<T = any>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = new URL(`${WOOCOMMERCE_URL}/wp-json/wc/v3${endpoint}`);
+  const url = buildWooCommerceUrl(endpoint);
 
-  // 添加认证参数
-  url.searchParams.append('consumer_key', CONSUMER_KEY);
-  url.searchParams.append('consumer_secret', CONSUMER_SECRET);
-
-  const response = await fetch(url.toString(), {
+  const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',

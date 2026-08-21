@@ -65,3 +65,24 @@ export function validateEnv(env: Env): { valid: boolean; missing: string[] } {
     missing,
   };
 }
+
+/**
+ * Build WooCommerce API URL with URL parameter authentication
+ * This is more compatible than Basic Auth with some hosting providers
+ */
+export function buildWooCommerceApiUrl(env: Env, endpoint: string, additionalParams?: Record<string, string>): string {
+  const url = new URL(`${env.WOOCOMMERCE_URL}/wp-json/wc/v3${endpoint}`);
+
+  // Add authentication as URL parameters (not Basic Auth)
+  url.searchParams.append('consumer_key', env.WOOCOMMERCE_CONSUMER_KEY);
+  url.searchParams.append('consumer_secret', env.WOOCOMMERCE_CONSUMER_SECRET);
+
+  // Add additional parameters
+  if (additionalParams) {
+    Object.entries(additionalParams).forEach(([key, value]) => {
+      url.searchParams.append(key, value);
+    });
+  }
+
+  return url.toString();
+}
