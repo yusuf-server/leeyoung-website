@@ -1,0 +1,137 @@
+---
+import { getProducts } from '../lib/woocommerce';
+
+let testResult = {
+  success: false,
+  error: null,
+  products: [],
+  env: {
+    hasUrl: false,
+    hasKey: false,
+    hasSecret: false,
+  }
+};
+
+try {
+  // 检查环境变量
+  testResult.env.hasUrl = !!import.meta.env.WOOCOMMERCE_URL;
+  testResult.env.hasKey = !!import.meta.env.WOOCOMMERCE_CONSUMER_KEY;
+  testResult.env.hasSecret = !!import.meta.env.WOOCOMMERCE_CONSUMER_SECRET;
+
+  // 尝试获取产品
+  const products = await getProducts({ per_page: 5 });
+  testResult.success = true;
+  testResult.products = products;
+} catch (error: any) {
+  testResult.error = error.message || String(error);
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test</title>
+  <style>
+    body {
+      font-family: monospace;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .section {
+      background: #2a2a2a;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border-left: 4px solid #00d4ff;
+    }
+    .success { border-left-color: #00ff00; }
+    .error { border-left-color: #ff0000; }
+    h2 { margin-top: 0; }
+    pre {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .status.ok { background: #00ff0020; color: #00ff00; }
+    .status.fail { background: #ff000020; color: #ff0000; }
+  </style>
+</head>
+<body>
+  <h1>🔍 WooCommerce API Test</h1>
+
+  <div class={`section ${testResult.success ? 'success' : 'error'}`}>
+    <h2>Overall Status</h2>
+    <p>
+      <span class={`status ${testResult.success ? 'ok' : 'fail'}`}>
+        {testResult.success ? '✅ SUCCESS' : '❌ FAILED'}
+      </span>
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>Environment Variables</h2>
+    <p>WOOCOMMERCE_URL: <span class={`status ${testResult.env.hasUrl ? 'ok' : 'fail'}`}>
+      {testResult.env.hasUrl ? '✅ Set' : '❌ Missing'}
+    </span></p>
+    <p>WOOCOMMERCE_CONSUMER_KEY: <span class={`status ${testResult.env.hasKey ? 'ok' : 'fail'}`}>
+      {testResult.env.hasKey ? '✅ Set' : '❌ Missing'}
+    </span></p>
+    <p>WOOCOMMERCE_CONSUMER_SECRET: <span class={`status ${testResult.env.hasSecret ? 'ok' : 'fail'}`}>
+      {testResult.env.hasSecret ? '✅ Set' : '❌ Missing'}
+    </span></p>
+  </div>
+
+  {testResult.error && (
+    <div class="section error">
+      <h2>Error Details</h2>
+      <pre>{testResult.error}</pre>
+    </div>
+  )}
+
+  {testResult.success && (
+    <div class="section success">
+      <h2>Products Found: {testResult.products.length}</h2>
+      <pre>{JSON.stringify(testResult.products.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        stock_status: p.stock_status
+      })), null, 2)}</pre>
+    </div>
+  )}
+
+  <div class="section">
+    <h2>Next Steps</h2>
+    {testResult.success ? (
+      <ul>
+        <li>✅ API connection is working</li>
+        <li>Check browser console on homepage for client-side errors</li>
+        <li>Verify products have images and are in stock</li>
+      </ul>
+    ) : (
+      <ul>
+        <li>Check environment variables in Cloudflare Pages settings</li>
+        <li>Verify WooCommerce API keys are correct</li>
+        <li>Ensure WooCommerce REST API is enabled</li>
+        <li>Check WordPress site is accessible</li>
+      </ul>
+    )}
+  </div>
+
+  <p style="margin-top: 40px; text-align: center; opacity: 0.6;">
+    <a href="/" style="color: #00d4ff;">← Back to Home</a>
+  </p>
+</body>
+</html>
