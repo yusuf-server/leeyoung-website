@@ -1,7 +1,6 @@
----
-export const prerender = false;
-
 import type { APIRoute } from 'astro';
+
+export const prerender = false;
 
 export const GET: APIRoute = async () => {
   const WOOCOMMERCE_URL = import.meta.env.WOOCOMMERCE_URL;
