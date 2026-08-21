@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getEnv, validateEnv } from '../../lib/env';
+import { getProducts } from '../../lib/woocommerce';
 
 export const prerender = false;
 
@@ -27,39 +28,26 @@ export const GET: APIRoute = async ({ locals }) => {
         valid: validation.valid,
         missing: validation.missing,
       },
-      test: null as any,
+      realApiTest: null as any,
     };
 
-    // 尝试访问 WooCommerce API
+    // 使用真实的 getProducts 函数测试
     if (validation.valid) {
       try {
-        const url = `${env.WOOCOMMERCE_URL}/wp-json/wc/v3/products?consumer_key=${env.WOOCOMMERCE_CONSUMER_KEY}&consumer_secret=${env.WOOCOMMERCE_CONSUMER_SECRET}&per_page=1`;
+        const products = await getProducts({ per_page: 2, env });
 
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'LEEYOUNG-Website/1.0',
-          },
-        });
-
-        const contentType = response.headers.get('content-type') || '';
-        let data: any = null;
-
-        if (contentType.includes('application/json')) {
-          data = await response.json();
-        } else {
-          data = await response.text();
-          data = data.substring(0, 500); // 只返回前500字符
-        }
-
-        result.test = {
-          status: response.status,
-          ok: response.ok,
-          contentType,
-          dataType: typeof data,
-          dataPreview: Array.isArray(data) ? `Array(${data.length})` : JSON.stringify(data).substring(0, 200),
+        result.realApiTest = {
+          success: true,
+          productsCount: products.length,
+          firstProduct: products[0] ? {
+            id: products[0].id,
+            name: products[0].name,
+            price: products[0].price,
+          } : null,
         };
       } catch (error: any) {
-        result.test = {
+        result.realApiTest = {
+          success: false,
           error: error.message,
           stack: error.stack?.substring(0, 500),
         };

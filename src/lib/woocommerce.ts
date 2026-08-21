@@ -68,6 +68,8 @@ export async function wooCommerceRequest<T = any>(
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (compatible; LEEYOUNG-Website/1.0)',
       ...options.headers,
     },
   });
