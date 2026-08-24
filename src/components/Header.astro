@@ -4,7 +4,7 @@ import { getEnv } from '../lib/env';
 
 const navItems = [
   { name: 'Home', href: '/' },
-  { name: 'Products', href: '#products', hasMegaMenu: true },
+  { name: 'Products', href: '/shop', hasMegaMenu: true },
   { name: 'About', href: '/about' },
   { name: 'Blog', href: '/blog' },
   { name: 'Contact', href: '/contact' },
@@ -190,6 +190,11 @@ try {
                       <span class="mobile-submenu-title">{item.name}</span>
                     </div>
                     <div class="mobile-submenu-grid">
+                      <!-- View All Products 选项 -->
+                      <a href="/shop" class="mobile-submenu-item mobile-submenu-item--all">
+                        
+                        <span class="mobile-submenu-name mobile-submenu-name--all">View All Products</span>
+                      </a>
                       {productCategories.map((category) => (
                         <a href={category.href} class="mobile-submenu-item">
                           <div class="mobile-submenu-image">
@@ -372,6 +377,7 @@ try {
   }
 
   .mega-menu-image {
+    border-radius:10px;
     position: relative;
     width: 100%;
     aspect-ratio: 1;
@@ -393,7 +399,7 @@ try {
   .mega-menu-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+    
     opacity: 0;
     transition: opacity 0.3s;
   }
@@ -406,8 +412,8 @@ try {
     position: relative;
     padding: 1.25rem 0.5rem;
     color: var(--color-primary);
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: 0.65rem;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     text-align: center;
@@ -796,18 +802,46 @@ try {
   .mobile-submenu-name {
     padding: 0.75rem;
     text-align: center;
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.5rem;
+    font-weight: 400;
     color: var(--color-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     line-height: 1.3;
-    min-height: 2.6rem;
+    min-height: 2.2rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* View All Products 特殊样式 */
+  .mobile-submenu-item--all {
+    grid-column: 1 / -1;
+    background: var(--color-secondary);
+  }
+
+  .mobile-submenu-item--all:hover {
+    background: #e6b800;
+    transform: translateY(-2px);
+  }
+
+  .mobile-submenu-image--all {
+    background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-submenu-image--all svg {
+    color: var(--color-primary);
+  }
+
+  .mobile-submenu-name--all {
+    color: var(--color-primary);
+    font-weight: 700;
+    font-size: 0.8rem;
   }
 
   /* ==================== Auth Modal ==================== */
@@ -1664,8 +1698,14 @@ try {
           }, 100);
         });
 
-        // 点击背景遮罩关闭
+        // 鼠标进入 backdrop 区域时关闭菜单
         if (backdrop) {
+          backdrop.addEventListener('mouseenter', () => {
+            isHovering = false;
+            megaMenu.classList.remove('show');
+          });
+
+          // 点击背景遮罩关闭
           backdrop.addEventListener('click', () => {
             megaMenu.classList.remove('show');
           });

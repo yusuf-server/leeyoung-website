@@ -20,8 +20,9 @@ const {
       muted
       loop
       playsinline
-      
+      preload="metadata"
     >
+      <source src={desktopVideo.replace('.mp4', '.webm')} type="video/webm" />
       <source src={desktopVideo} type="video/mp4" />
     </video>
 
@@ -32,8 +33,9 @@ const {
       muted
       loop
       playsinline
-      
+      preload="metadata"
     >
+      <source src={mobileVideo.replace('.mp4', '.webm')} type="video/webm" />
       <source src={mobileVideo} type="video/mp4" />
     </video>
 
@@ -45,8 +47,7 @@ const {
       <p class="hero-subtitle" data-hero-animate="subtitle">PRECISION ENGINEERED & BUILT TO LAST</p>
       <h1 class="hero-title" data-hero-animate="title">PREMIUM<br/>HANDTRUCKS</h1>
       <div class="hero-actions" data-hero-animate="actions">
-        <button class="btn btn-primary" id="exploreCollectionBtn">Explore 2026 Collection</button>
-        <a href="/shop" class="btn btn-secondary">View All Products</a>
+        <a href="/shop" class="btn btn-primary">View All Products</a>
       </div>
     </div>
   </div>
@@ -294,6 +295,7 @@ const {
   }
 
   .btn-primary {
+    margin-top:3rem;
     background: var(--color-secondary);
     color: var(--color-primary);
     border: 2px solid var(--color-secondary);
