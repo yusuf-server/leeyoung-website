@@ -135,13 +135,92 @@ export const prerender = false;
         <!-- Password Change -->
         <div class="settings-section">
           <h2 class="section-title">Password</h2>
-          <p class="password-desc">For security reasons, password changes are handled through a secure reset process.</p>
-          <a href="/reset-password" class="btn-secondary">Reset Password</a>
+          <p class="password-desc">Change your password to keep your account secure.</p>
+          <button type="button" class="btn-secondary" id="changePasswordBtn">Change Password</button>
         </div>
 
       </main>
     </div>
   </section>
+
+  <!-- Change Password Modal -->
+  <div class="password-modal" id="passwordModal">
+    <div class="password-modal-overlay"></div>
+    <div class="password-modal-content">
+      <button class="password-modal-close" id="closePasswordModal">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="password-modal-header">
+        <h2>Change Password</h2>
+        <p>Enter your current password and choose a new one</p>
+      </div>
+
+      <form class="password-form" id="passwordForm">
+        <div class="form-group">
+          <label for="currentPassword">Current Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="currentPassword" name="currentPassword" required />
+            <button type="button" class="password-toggle" data-toggle="currentPassword">
+              <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="newPassword" name="newPassword" required minlength="8" />
+            <button type="button" class="password-toggle" data-toggle="newPassword">
+              <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+          <span class="form-hint">Must be at least 8 characters</span>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm New Password</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" />
+            <button type="button" class="password-toggle" data-toggle="confirmPassword">
+              <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="password-error" id="passwordError"></div>
+
+        <div class="password-modal-actions">
+          <button type="button" class="btn-cancel" id="cancelPasswordBtn">Cancel</button>
+          <button type="submit" class="btn-primary">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <Footer />
 </BaseLayout>
@@ -354,6 +433,112 @@ export const prerender = false;
 
   // Initialize
   checkAuth();
+
+  // Password modal handlers
+  const passwordModal = document.getElementById('passwordModal');
+  const changePasswordBtn = document.getElementById('changePasswordBtn');
+  const closePasswordModal = document.getElementById('closePasswordModal');
+  const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+  const passwordForm = document.getElementById('passwordForm');
+  const passwordError = document.getElementById('passwordError');
+
+  // Open modal
+  changePasswordBtn?.addEventListener('click', () => {
+    passwordModal?.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  });
+
+  // Close modal
+  function closeModal() {
+    passwordModal?.classList.remove('active');
+    document.body.style.overflow = '';
+    passwordForm?.reset();
+    if (passwordError) passwordError.textContent = '';
+  }
+
+  closePasswordModal?.addEventListener('click', closeModal);
+  cancelPasswordBtn?.addEventListener('click', closeModal);
+  passwordModal?.querySelector('.password-modal-overlay')?.addEventListener('click', closeModal);
+
+  // Password toggle visibility
+  document.querySelectorAll('.password-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-toggle');
+      const input = document.getElementById(targetId!) as HTMLInputElement;
+      const eyeOpen = btn.querySelector('.eye-open') as HTMLElement;
+      const eyeClosed = btn.querySelector('.eye-closed') as HTMLElement;
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.style.display = 'none';
+        eyeClosed.style.display = 'block';
+      } else {
+        input.type = 'password';
+        eyeOpen.style.display = 'block';
+        eyeClosed.style.display = 'none';
+      }
+    });
+  });
+
+  // Handle password form submit
+  passwordForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const form = e.target as HTMLFormElement;
+    const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const originalText = submitBtn.textContent;
+
+    const currentPassword = (document.getElementById('currentPassword') as HTMLInputElement).value;
+    const newPassword = (document.getElementById('newPassword') as HTMLInputElement).value;
+    const confirmPassword = (document.getElementById('confirmPassword') as HTMLInputElement).value;
+
+    // Validate
+    if (newPassword !== confirmPassword) {
+      passwordError!.textContent = 'New passwords do not match';
+      passwordError!.style.display = 'block';
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      passwordError!.textContent = 'Password must be at least 8 characters';
+      passwordError!.style.display = 'block';
+      return;
+    }
+
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Updating...';
+      passwordError!.style.display = 'none';
+
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        submitBtn.textContent = '✓ Updated';
+        submitBtn.style.background = '#10b981';
+
+        setTimeout(() => {
+          closeModal();
+          submitBtn.textContent = originalText;
+          submitBtn.style.background = '';
+          submitBtn.disabled = false;
+        }, 1500);
+      } else {
+        throw new Error(result.error || 'Failed to update password');
+      }
+    } catch (error: any) {
+      console.error('Password update error:', error);
+      passwordError!.textContent = error.message || 'Failed to update password. Please try again.';
+      passwordError!.style.display = 'block';
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
+  });
 
   // Entrance animations
   gsap.from('.account-sidebar', {
@@ -645,6 +830,150 @@ export const prerender = false;
     font-size: 0.9375rem;
     margin-bottom: 1.5rem;
     line-height: 1.6;
+  }
+
+  /* Password Modal */
+  .password-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .password-modal.active {
+    display: flex;
+  }
+
+  .password-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+  }
+
+  .password-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+  }
+
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .password-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .password-modal-close:hover {
+    color: #000;
+  }
+
+  .password-modal-header {
+    margin-bottom: 2rem;
+  }
+
+  .password-modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .password-modal-header p {
+    font-size: 0.9375rem;
+    color: #666;
+  }
+
+  .password-form .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .password-input-wrapper {
+    position: relative;
+  }
+
+  .password-input-wrapper input {
+    width: 100%;
+    padding-right: 3rem;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .password-toggle:hover {
+    color: #000;
+  }
+
+  .password-error {
+    display: none;
+    padding: 0.875rem;
+    background: #fee;
+    border: 1px solid #fcc;
+    border-radius: 6px;
+    color: #c00;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  .password-modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel {
+    padding: 0.875rem 1.5rem;
+    background: #f3f4f6;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-cancel:hover {
+    background: #e5e7eb;
   }
 
   /* Responsive */

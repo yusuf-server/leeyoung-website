@@ -874,8 +874,8 @@ if (specifications.length === 0) {
                 camera-controls
                 auto-rotate
                 shadow-intensity="1"
-                exposure="0.6"
-                environment-image="neutral"
+                exposure="0.4"
+                environment-image="legacy"
                 tone-mapping="commerce"
                 loading="eager"
                 reveal="auto"
@@ -889,7 +889,7 @@ if (specifications.length === 0) {
                   </div>
                 </div>
               </model-viewer>
-              <div class="viewer-controls">
+              <div class="viewer-controls" id="viewer-controls-hint">
                 <div class="control-info">
                   <span>Drag to rotate • Scroll to zoom • Double-click to reset</span>
                 </div>
@@ -1220,6 +1220,7 @@ if (specifications.length === 0) {
 <script>
   import { gsap } from '../../lib/gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { showError, showWarning } from '../../lib/alert';
 
   // ==================== Breadcrumbs Animation ====================
   gsap.from('[data-product="breadcrumbs"] li', {
@@ -1842,7 +1843,7 @@ if (specifications.length === 0) {
 
       } catch (error) {
         console.error('Failed to add to cart:', error);
-        alert('Failed to add item to cart. Please try again.');
+        showError('Failed to add item to cart. Please try again.');
         addToCartBtn.textContent = originalText;
         addToCartBtn.disabled = false;
       }
@@ -2342,7 +2343,7 @@ if (specifications.length === 0) {
         const authData = await authCheck.json();
 
         if (!authData.authenticated) {
-          alert('Please log in to write a review.');
+          showWarning('Please log in to write a review.', 'Login Required');
           // Trigger auth modal
           document.querySelector('[data-open-auth]')?.dispatchEvent(new Event('click'));
           return;
@@ -2353,7 +2354,7 @@ if (specifications.length === 0) {
         document.body.style.overflow = 'hidden';
       } catch (error) {
         console.error('Error checking auth status:', error);
-        alert('Unable to open review form. Please try again.');
+        showError('Unable to open review form. Please try again.');
       } finally {
         // Restore button state
         openReviewBtn.textContent = originalText;
@@ -2910,7 +2911,7 @@ if (specifications.length === 0) {
 
         } catch (error) {
           console.error('Failed to add to cart:', error);
-          alert('Failed to add item to cart. Please try again.');
+          showError('Failed to add item to cart. Please try again.');
           stickyAddToCartBtn.textContent = originalText;
           stickyAddToCartBtn.disabled = false;
         }
@@ -2998,6 +2999,24 @@ if (specifications.length === 0) {
     } else {
       console.log('Model viewer not found or no loading progress element');
     }
+
+    // 3D查看器提示框自动消失
+    const viewerControlsHint = document.getElementById('viewer-controls-hint');
+    if (viewerControlsHint) {
+      // 3秒后淡出提示框
+      setTimeout(() => {
+        viewerControlsHint.classList.add('fade-out');
+      }, 3000);
+
+      // 如果用户与模型交互，立即隐藏提示框
+      if (modelViewer) {
+        const hideHint = () => {
+          viewerControlsHint.classList.add('fade-out');
+        };
+
+        modelViewer.addEventListener('camera-change', hideHint, { once: true });
+      }
+    }
   });
 
   // ==================== Load More Reviews ====================
@@ -3077,8 +3096,7 @@ if (specifications.length === 0) {
   /* ==================== Breadcrumbs ==================== */
   .breadcrumbs-section {
     background: #f4f4f4;
-    padding: 1rem 0;
-    margin-top: 80px; /* Header 高度 */
+    padding: calc(80px + 1rem) 0 1rem;
   }
 
   .breadcrumbs-container {
@@ -4754,6 +4772,13 @@ if (specifications.length === 0) {
     border-radius: 50px;
     z-index: 10;
     pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+
+  .viewer-controls.fade-out {
+    opacity: 0;
+    visibility: hidden;
   }
 
   .control-info {

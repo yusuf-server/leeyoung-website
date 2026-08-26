@@ -303,6 +303,8 @@ function getCategories(post: Post) {
 </BaseLayout>
 
 <script>
+  import { showSuccess } from '../lib/alert';
+
   // Category filtering
   const categoryButtons = document.querySelectorAll('.category-btn, .category-item');
   const posts = document.querySelectorAll('[data-post]');
@@ -347,7 +349,7 @@ function getCategories(post: Post) {
       e.preventDefault();
       const input = newsletterForm.querySelector('.newsletter-input');
       if (input) {
-        alert('Thank you for subscribing!');
+        showSuccess('Thank you for subscribing!', 'Subscribed');
         input.value = '';
       }
     });

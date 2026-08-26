@@ -84,6 +84,31 @@ const currentYear = new Date().getFullYear();
 <script>
   import { gsap } from '../lib/gsap';
 
+  // Check if user is logged in
+  function isUserLoggedIn(): boolean {
+    const token = localStorage.getItem('wc_token');
+    return !!token;
+  }
+
+  // Trigger auth modal
+  function openAuthModal() {
+    const authModal = document.querySelector('.auth-modal');
+    if (authModal) {
+      authModal.classList.add('active');
+    }
+  }
+
+  // Handle protected links
+  const protectedLinks = document.querySelectorAll('.footer-links a[href^="/account"]');
+  protectedLinks.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      if (!isUserLoggedIn()) {
+        e.preventDefault();
+        openAuthModal();
+      }
+    });
+  });
+
   // Accordion functionality for mobile
   const accordionTriggers = document.querySelectorAll('[data-accordion-trigger]');
 

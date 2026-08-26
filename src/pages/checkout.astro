@@ -324,6 +324,7 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
   import { CartManager, type Cart } from '../lib/cart-manager';
   import { gsap } from '../lib/gsap';
   import analytics from '../lib/analytics';
+  import { showError, showWarning, showInfo } from '../lib/alert';
 
   // Payment method detection
   const hasStripe = document.querySelector('[data-payment-method="stripe"]') !== null;
@@ -381,7 +382,7 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
       });
     } catch (error) {
       console.error('Failed to initialize Stripe:', error);
-      alert('Failed to load payment system. Please refresh the page.');
+      showError('Failed to load payment system. Please refresh the page.');
     }
   }
 
@@ -489,7 +490,7 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
           window.location.href = successUrl;
         } catch (error: any) {
           console.error('❌ 支付捕获失败:', error);
-          alert(`Payment capture failed: ${error.message}`);
+          showError(`Payment capture failed: ${error.message}`);
 
           // Redirect to failed page
           window.location.href = `/checkout/failed?order_id=${currentOrderId}&order_key=${currentOrderKey}&reason=${encodeURIComponent(error.message)}`;
@@ -497,11 +498,11 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
       },
       onError: (err: any) => {
         console.error('❌ PayPal 错误:', err);
-        alert('Payment failed. Please try again.');
+        showError('Payment failed. Please try again.');
       },
       onCancel: () => {
         console.log('⚠️ 用户取消了支付');
-        alert('Payment was cancelled. You can try again when ready.');
+        showInfo('Payment was cancelled. You can try again when ready.', 'Payment Cancelled');
       },
     }).render('#paypal-button-container');
   }
@@ -526,11 +527,20 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
   function loadCart() {
     cart = CartManager.getCart();
 
+    console.log('🛒 Loading cart in checkout:', cart);
+
     // Redirect if cart is empty
     if (!cart || cart.items.length === 0) {
+      console.warn('⚠️ Cart is empty, redirecting to cart page');
       window.location.href = '/cart';
       return;
     }
+
+    console.log('✅ Cart loaded successfully:', {
+      itemCount: cart.items.length,
+      subtotal: cart.subtotal,
+      total: cart.total
+    });
 
     isLoading = false;
     renderOrderSummary();
@@ -582,7 +592,7 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
     for (const fieldId of requiredFields) {
       const input = document.getElementById(fieldId) as HTMLInputElement | HTMLSelectElement;
       if (!input || !input.value.trim()) {
-        alert(`Please fill in the ${fieldId} field`);
+        showWarning(`Please fill in the ${fieldId} field`, 'Required Field');
         input?.focus();
         return false;
       }
@@ -598,7 +608,7 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
     }
 
     if (!stripe || !cardElement) {
-      alert('Payment system not ready. Please refresh the page.');
+      showError('Payment system not ready. Please refresh the page.');
       return;
     }
 
@@ -735,7 +745,7 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
 
     } catch (error: any) {
       console.error('Order submission failed:', error);
-      alert(error.message || 'Payment failed. Please try again.');
+      showError(error.message || 'Payment failed. Please try again.');
       btn.disabled = false;
       btn.textContent = 'Complete order';
     }

@@ -1594,6 +1594,7 @@ try {
 
 <script>
   import { CartManager } from '../lib/cart-manager';
+  import { showInfo } from '../lib/alert';
 
   // 移动端菜单交互逻辑
   document.addEventListener('DOMContentLoaded', () => {
@@ -1780,9 +1781,27 @@ try {
       });
     });
 
+    // Handle forgot password link
+    const forgotPasswordLink = document.querySelector('.forgot-password');
+    if (forgotPasswordLink) {
+      forgotPasswordLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Close auth modal
+        if (authModal) {
+          authModal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+        // Navigate to reset password page
+        window.location.href = '/reset-password';
+      });
+    }
+
     function showUserMenu(user) {
       // Simple implementation - redirect to account page or show dropdown
-      alert(`Welcome, ${user.name}!\n\nFeatures:\n- View Orders\n- Account Settings\n- Logout`);
+      showInfo(
+        `Welcome, ${user.name}!\n\nFeatures:\n- View Orders\n- Account Settings\n- Logout`,
+        'Account'
+      );
       // TODO: Implement proper user dropdown menu
     }
 

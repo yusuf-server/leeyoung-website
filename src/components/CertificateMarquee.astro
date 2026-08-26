@@ -1,0 +1,545 @@
+---
+interface Certificate {
+  id: string;
+  image: string;
+  title: string;
+}
+
+interface Props {
+  certificates: Certificate[];
+  speed?: number; // seconds per full cycle
+}
+
+const { certificates, speed = 30 } = Astro.props;
+---
+
+<section class="certificate-marquee-section">
+  <div class="section-container">
+    <div class="section-header">
+      <h3 class="section-subheading">Certifications</h3>
+      <h2 class="section-title">Quality Standards & Compliance</h2>
+      <p class="section-description">
+        Our commitment to excellence is reflected in our comprehensive certifications and compliance with international quality standards.
+      </p>
+    </div>
+
+    <div class="marquee-container">
+      <!-- Fade edges -->
+      <div class="fade-edge fade-left"></div>
+      <div class="fade-edge fade-right"></div>
+
+      <!-- Marquee track -->
+      <div class="marquee-track" data-speed={speed}>
+        <!-- First set of certificates -->
+        <div class="marquee-content">
+          {certificates.map((cert) => (
+            <div class="certificate-card" data-certificate-id={cert.id}>
+              <div class="certificate-image-wrapper">
+                <img
+                  src={cert.image}
+                  alt={cert.title}
+                  class="certificate-image"
+                  loading="lazy"
+                />
+                <div class="certificate-overlay">
+                  <svg class="zoom-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                    <line x1="11" y1="8" x2="11" y2="14"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <!-- Duplicate set for seamless loop -->
+        <div class="marquee-content" aria-hidden="true">
+          {certificates.map((cert) => (
+            <div class="certificate-card" data-certificate-id={cert.id}>
+              <div class="certificate-image-wrapper">
+                <img
+                  src={cert.image}
+                  alt={cert.title}
+                  class="certificate-image"
+                  loading="lazy"
+                />
+                <div class="certificate-overlay">
+                  <svg class="zoom-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                    <line x1="11" y1="8" x2="11" y2="14"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox for preview -->
+<div class="certificate-lightbox" id="certificateLightbox">
+  <div class="lightbox-backdrop"></div>
+  <div class="lightbox-content">
+    <button class="lightbox-close" aria-label="Close preview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <div class="lightbox-image-container">
+      <img id="lightboxImage" src="" alt="" />
+    </div>
+  </div>
+</div>
+
+<style>
+  .certificate-marquee-section {
+    padding: 80px 0;
+    background: #f7f7f7;
+    overflow: hidden;
+  }
+
+  .section-container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .section-subheading {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #666;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #000;
+    line-height: 1.2;
+  }
+
+  .section-description {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: #666;
+  }
+
+  /* Marquee Container */
+  .marquee-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    cursor: grab;
+  }
+
+  .marquee-container:active {
+    cursor: grabbing;
+  }
+
+  .fade-edge {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100px;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .fade-left {
+    left: 0;
+    background: linear-gradient(to right, rgba(247, 247, 247, 1) 0%, rgba(247, 247, 247, 0) 100%);
+  }
+
+  .fade-right {
+    right: 0;
+    background: linear-gradient(to left, rgba(247, 247, 247, 1) 0%, rgba(247, 247, 247, 0) 100%);
+  }
+
+  /* Marquee Track */
+  .marquee-track {
+    display: flex;
+    width: fit-content;
+    animation: scroll var(--scroll-speed, 30s) linear infinite;
+    transition: transform 0.1s ease-out;
+  }
+
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  .marquee-track.dragging {
+    animation-play-state: paused;
+    transition: none;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .marquee-content {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1rem 0;
+  }
+
+  /* Certificate Card */
+  .certificate-card {
+    flex-shrink: 0;
+    width: 200px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+
+  .certificate-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .certificate-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+
+  .certificate-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .certificate-card:hover .certificate-image {
+    transform: scale(1.05);
+  }
+
+  .certificate-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .certificate-card:hover .certificate-overlay {
+    opacity: 1;
+  }
+
+  .zoom-icon {
+    width: 40px;
+    height: 40px;
+    color: #FFD700;
+  }
+
+  /* Lightbox */
+  .certificate-lightbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .certificate-lightbox.active {
+    display: flex;
+  }
+
+  .lightbox-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    animation: fadeIn 0.3s ease;
+  }
+
+  .lightbox-content {
+    position: relative;
+    max-width: 1200px;
+    max-height: 90vh;
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    animation: zoomIn 0.3s ease;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 48px;
+    height: 48px;
+    background: rgba(0, 0, 0, 0.8);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .lightbox-close:hover {
+    background: #000;
+    transform: scale(1.1);
+  }
+
+  .lightbox-close svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .lightbox-image-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: #f5f5f5;
+    min-height: 60vh;
+  }
+
+  .lightbox-image-container img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .certificate-marquee-section {
+      padding: 40px 0;
+    }
+
+    .certificate-card {
+      width: 140px;
+    }
+
+    .certificate-image-wrapper {
+      height: 200px;
+    }
+
+    .fade-edge {
+      width: 60px;
+    }
+
+    .marquee-content {
+      gap: 1rem;
+    }
+
+    .zoom-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .lightbox-content {
+      max-height: 95vh;
+    }
+
+    .lightbox-image-container {
+      padding: 1rem;
+      min-height: 50vh;
+    }
+
+    .lightbox-image-container img {
+      max-height: 70vh;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .certificate-card {
+      width: 120px;
+    }
+
+    .certificate-image-wrapper {
+      height: 170px;
+    }
+
+    .marquee-content {
+      gap: 0.75rem;
+    }
+
+    .fade-edge {
+      width: 40px;
+    }
+  }
+</style>
+
+<script>
+  // Set animation speed
+  const track = document.querySelector('.marquee-track') as HTMLElement;
+  if (track) {
+    const speed = track.dataset.speed || '30';
+    track.style.setProperty('--scroll-speed', `${speed}s`);
+  }
+
+  // Certificate data store
+  const certificatesData = new Map();
+
+  // Parse certificates data from DOM
+  document.querySelectorAll('.certificate-card').forEach((card) => {
+    const id = card.getAttribute('data-certificate-id');
+    const img = card.querySelector('.certificate-image') as HTMLImageElement;
+    const title = img?.alt || '';
+
+    if (id && img) {
+      certificatesData.set(id, {
+        image: img.src,
+        title
+      });
+    }
+  });
+
+  // Mouse drag functionality
+  const container = document.querySelector('.marquee-container') as HTMLElement;
+  let isDragging = false;
+  let startX = 0;
+  let scrollLeft = 0;
+  let currentTransform = 0;
+
+  if (container && track) {
+    container.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.pageX - container.offsetLeft;
+      scrollLeft = currentTransform;
+      track.classList.add('dragging');
+    });
+
+    container.addEventListener('mouseleave', () => {
+      isDragging = false;
+      track.classList.remove('dragging');
+    });
+
+    container.addEventListener('mouseup', () => {
+      isDragging = false;
+      track.classList.remove('dragging');
+    });
+
+    container.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const x = e.pageX - container.offsetLeft;
+      const walk = (x - startX) * 1.5; // Drag sensitivity
+      currentTransform = scrollLeft + walk;
+
+      // Apply transform while maintaining animation offset
+      const computedStyle = window.getComputedStyle(track);
+      const matrix = computedStyle.transform;
+      if (matrix !== 'none') {
+        const matrixValues = matrix.match(/matrix.*\((.+)\)/);
+        if (matrixValues) {
+          const values = matrixValues[1].split(', ');
+          const animationOffset = parseFloat(values[4]);
+          track.style.transform = `translateX(${animationOffset + walk}px)`;
+        }
+      }
+    });
+  }
+
+  // Lightbox functionality
+  const lightbox = document.getElementById('certificateLightbox');
+  const lightboxImage = document.getElementById('lightboxImage') as HTMLImageElement;
+  const closeBtn = lightbox?.querySelector('.lightbox-close');
+  const backdrop = lightbox?.querySelector('.lightbox-backdrop');
+
+  function openLightbox(certificateId: string) {
+    const cert = certificatesData.get(certificateId);
+    if (!cert || !lightbox) return;
+
+    lightboxImage.src = cert.image;
+    lightboxImage.alt = cert.title;
+
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    if (!lightbox) return;
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  // Event listeners
+  document.querySelectorAll('.certificate-card').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      // Only open lightbox if not dragging
+      if (!isDragging) {
+        const id = card.getAttribute('data-certificate-id');
+        if (id) openLightbox(id);
+      }
+    });
+  });
+
+  closeBtn?.addEventListener('click', closeLightbox);
+  backdrop?.addEventListener('click', closeLightbox);
+
+  // Close on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+</script>
+

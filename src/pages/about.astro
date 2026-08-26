@@ -2,6 +2,122 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Globe3D from '../components/Globe3D';
+import CertificateMarquee from '../components/CertificateMarquee.astro';
+
+// 证书数据
+const certificates = [
+  {
+    id: 'cert-1',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/1.webp',
+    title: 'Certificate 1'
+  },
+  {
+    id: 'cert-2',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/2.webp',
+    title: 'Certificate 2'
+  },
+  {
+    id: 'cert-3',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/3.webp',
+    title: 'Certificate 3'
+  },
+  {
+    id: 'cert-4',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/4.webp',
+    title: 'Certificate 4'
+  },
+  {
+    id: 'cert-5',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/5.webp',
+    title: 'Certificate 5'
+  },
+  {
+    id: 'cert-6',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/6.webp',
+    title: 'Certificate 6'
+  },
+  {
+    id: 'cert-7',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/7.webp',
+    title: 'Certificate 7'
+  },
+  {
+    id: 'cert-8',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/8.webp',
+    title: 'Certificate 8'
+  },
+  {
+    id: 'cert-9',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/9.webp',
+    title: 'Certificate 9'
+  },
+  {
+    id: 'cert-10',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/10.webp',
+    title: 'Certificate 10'
+  },
+  {
+    id: 'cert-11',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/11.webp',
+    title: 'Certificate 11'
+  },
+  {
+    id: 'cert-12',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/12.webp',
+    title: 'Certificate 12'
+  },
+  {
+    id: 'cert-13',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/13.webp',
+    title: 'Certificate 13'
+  },
+  {
+    id: 'cert-14',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/14.webp',
+    title: 'Certificate 14'
+  },
+  {
+    id: 'cert-15',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/15.webp',
+    title: 'Certificate 15'
+  },
+  {
+    id: 'cert-16',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/16.webp',
+    title: 'Certificate 16'
+  },
+  {
+    id: 'cert-17',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/17.webp',
+    title: 'Certificate 17'
+  },
+  {
+    id: 'cert-18',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/18.webp',
+    title: 'Certificate 18'
+  },
+  {
+    id: 'cert-19',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/19.webp',
+    title: 'Certificate 19'
+  },
+  {
+    id: 'cert-20',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/20.webp',
+    title: 'Certificate 20'
+  },
+  {
+    id: 'cert-21',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/21.webp',
+    title: 'Certificate 21'
+  },
+  {
+    id: 'cert-22',
+    image: 'https://cms.leeyoungshop.com/wp-content/uploads/2026/08/22.webp',
+    title: 'Certificate 22'
+  },
+];
 ---
 
 <BaseLayout
@@ -10,21 +126,21 @@ import Footer from '../components/Footer.astro';
 >
   <Header />
 
-  <!-- Hero Section -->
+  <!-- Hero Section with 3D Globe -->
   <section class="about-hero">
-    <div class="hero-image-container">
-      <img
-        src="https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=1920&h=800&fit=crop"
-        alt="LEEYOUNG Factory"
-        class="hero-image"
-      />
+    <div class="hero-globe-container">
+      <div class="globe-wrapper">
+        <Globe3D client:only="react" />
+      </div>
       <div class="hero-overlay">
         <div class="hero-content">
           <h2 class="hero-subheading">Our Story</h2>
-          <h1 class="hero-title">About LEEYOUNG</h1>
+          <h1 class="hero-title">Global Manufacturing Excellence</h1>
           <p class="hero-text">
-            LEEYOUNG was founded in <strong>2005</strong> and has been developing high-quality industrial equipment for nearly two decades.
-            We combine advanced manufacturing technology with real-world experience to create reliable, professional-grade products.
+            Jinhua Leeyoung Hardware Manufacture Co., Ltd is located in Wucheng District, Jinhua — <strong>330 km from Shanghai, 170 km from Hangzhou, and 50 km from Yiwu Airport</strong>.
+          </p>
+          <p class="hero-text">
+            With ISO certification and BSCI, VPA, and GS-TUV compliance, we deliver quality products to global markets across Europe, Americas, Asia-Pacific, and beyond.
           </p>
         </div>
       </div>
@@ -34,7 +150,7 @@ import Footer from '../components/Footer.astro';
   <!-- Image with Text Section 1 -->
   <section class="image-text-section bg-light">
     <div class="section-container">
-      <div class="image-text-grid">
+      <div class="image-text-grid slide-in-left">
         <div class="image-column">
           <img
             src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=600&fit=crop"
@@ -44,13 +160,13 @@ import Footer from '../components/Footer.astro';
         </div>
         <div class="text-column">
           <div class="text-content">
+            <h3 class="section-subheading">Our Facilities</h3>
+            <h2 class="section-title">World-Class Manufacturing</h2>
             <p>
-              Behind LEEYOUNG stands a company with <strong>over 18 years</strong> of experience in the industrial equipment manufacturing industry.
-              Over the years, we have introduced many innovations and set new standards for quality and reliability.
+              We operate <strong>two state-of-the-art factories</strong>: Factory No.1 covers 18,000m² with 10,000m² production area, and Factory No.2 spans 28,000m² with 18,000m² production area. Together, our <strong>46,000m² total area</strong> supports an annual output of <strong>600,000 pieces</strong>.
             </p>
             <p>
-              Our brand was created as a result of many years of practice, testing, and constant improvement.
-              We develop our products based on real-world feedback and the evolving needs of our customers.
+              Our facilities are equipped with automatic packing assembly lines that significantly enhance efficiency and quality. With ISO system adoption and certification from BSCI, VPA, and GS-TUV, <strong>90% of our products obtain international certification</strong>.
             </p>
           </div>
         </div>
@@ -61,7 +177,7 @@ import Footer from '../components/Footer.astro';
   <!-- Image with Text Section 2 -->
   <section class="image-text-section bg-gray">
     <div class="section-container">
-      <div class="image-text-grid reverse">
+      <div class="image-text-grid reverse slide-in-right">
         <div class="image-column">
           <img
             src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop"
@@ -71,16 +187,14 @@ import Footer from '../components/Footer.astro';
         </div>
         <div class="text-column">
           <div class="text-content">
-            <h3 class="section-subheading">Brand Vision</h3>
-            <h2 class="section-title">Our Quality</h2>
+            <h3 class="section-subheading">Our Expertise</h3>
+            <h2 class="section-title">Specialized Manufacturing</h2>
             <p>
-              <strong>Every product is carefully manufactured and tested.</strong>
-              We don't cut corners. Each piece of equipment goes through rigorous quality control to ensure it meets our high standards.
+              <strong>LEEYOUNG specializes in manufacturing trolleys, hand trucks, rubber wheels and plastic wheels.</strong>
+              Our product range serves diverse industries worldwide, with main markets spanning Europe, South America, North America, Mexico, Japan, Australia, New Zealand, Korea, Taiwan, and Hong Kong.
             </p>
             <p>
-              We choose materials with care. Each product is a balanced system - reliable components, strong construction,
-              and engineering that prioritizes both performance and durability.
-              We don't follow trends. <strong>We build equipment for real work.</strong>
+              We choose materials with care and engineer each product as a balanced system—combining reliable components, robust construction, and performance-driven design. Our automatic packing assembly lines ensure consistent quality at scale. <strong>We build equipment for real work.</strong>
             </p>
           </div>
         </div>
@@ -91,7 +205,7 @@ import Footer from '../components/Footer.astro';
   <!-- Image with Text Section 3 -->
   <section class="image-text-section bg-light">
     <div class="section-container">
-      <div class="image-text-grid">
+      <div class="image-text-grid slide-in-left">
         <div class="image-column">
           <img
             src="https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=800&h=600&fit=crop"
@@ -102,14 +216,14 @@ import Footer from '../components/Footer.astro';
         <div class="text-column">
           <div class="text-content">
             <h3 class="section-subheading">Innovation</h3>
-            <h2 class="section-title">Continuous Improvement</h2>
+            <h2 class="section-title">Expert R&D Team</h2>
             <p>
-              We invest heavily in research and development to stay at the forefront of industrial technology.
-              Our engineering team constantly explores new materials, designs, and manufacturing processes.
+              Our own R&D team is expert in designing products tailored to different demands and applications.
+              This capability is one of the key factors that has guaranteed our sales growth rate year after year.
             </p>
             <p>
-              Innovation isn't just about new features - it's about making products that work better, last longer,
-              and provide genuine value to our customers. Every improvement we make is tested in real-world conditions.
+              Innovation isn't just about new features—it's about creating practical solutions that meet real-world challenges.
+              Every design is refined through testing and customer feedback, ensuring our products deliver genuine value in demanding environments.
             </p>
           </div>
         </div>
@@ -120,7 +234,7 @@ import Footer from '../components/Footer.astro';
   <!-- Image with Text Section 4 -->
   <section class="image-text-section bg-gray">
     <div class="section-container">
-      <div class="image-text-grid reverse">
+      <div class="image-text-grid reverse slide-in-right">
         <div class="image-column">
           <img
             src="https://images.unsplash.com/photo-1556761175-4b46a572b786?w=800&h=600&fit=crop"
@@ -130,15 +244,15 @@ import Footer from '../components/Footer.astro';
         </div>
         <div class="text-column">
           <div class="text-content">
-            <h3 class="section-subheading">Customer First</h3>
-            <h2 class="section-title">Our Commitment</h2>
+            <h3 class="section-subheading">Our Promise</h3>
+            <h2 class="section-title">Quality & Service Excellence</h2>
             <p>
-              We're not just manufacturers - we're partners in your success.
-              Our customer service team is always ready to provide support, answer questions, and help you get the most from our products.
+              With the aim of <strong>"the best quality and optimum service"</strong>, Jinhua Leeyoung Hardware Manufacture Co., Ltd is your best choice and faithful friend.
+              We're not just manufacturers—we're partners in your success.
             </p>
             <p>
-              From initial consultation to after-sales service, we're committed to providing an exceptional experience.
-              Your satisfaction is our priority, and we stand behind every product we make.
+              From initial consultation to after-sales support, we're committed to providing an exceptional experience.
+              Our customer service team is always ready to provide assistance, answer questions, and ensure you get the most from our products.
             </p>
           </div>
         </div>
@@ -209,56 +323,60 @@ import Footer from '../components/Footer.astro';
     </div>
   </section>
 
+  <!-- Certificate Marquee -->
+  <CertificateMarquee certificates={certificates} speed={40} />
+
   <Footer />
 </BaseLayout>
 
 <style>
-  /* Hero Section */
+  /* Hero Section with 3D Globe */
   .about-hero {
     width: 100%;
     position: relative;
-    margin-top: 80px;
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    padding-top: 80px;
   }
 
-  .hero-image-container {
+  .hero-globe-container {
     position: relative;
     width: 100%;
-    height: 600px;
+    min-height: 700px;
     overflow: hidden;
-  }
-
-  .hero-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .hero-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 100%);
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     align-items: center;
   }
 
-  .hero-content {
-    max-width: 1800px;
-    margin: 0 auto;
-    padding: 0 2rem;
+  .globe-wrapper {
+    position: relative;
     width: 100%;
-    color: #fff;
+    height: 700px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-overlay {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 4rem 3rem;
+    z-index: 2;
+  }
+
+  .hero-content {
     max-width: 600px;
+    color: #fff;
   }
 
   .hero-subheading {
-    font-size: 1rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.15em;
     margin-bottom: 1rem;
-    font-weight: 400;
+    font-weight: 600;
+    color: #FFD700;
   }
 
   .hero-title {
@@ -266,12 +384,21 @@ import Footer from '../components/Footer.astro';
     font-weight: 700;
     line-height: 1.1;
     margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .hero-text {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    opacity: 0.95;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    opacity: 0.9;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-text:last-child {
+    margin-bottom: 0;
   }
 
   /* Image with Text Sections */
@@ -298,6 +425,22 @@ import Footer from '../components/Footer.astro';
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     align-items: center;
+    opacity: 0;
+    transform: translateX(0);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .image-text-grid.slide-in-left {
+    transform: translateX(-50px);
+  }
+
+  .image-text-grid.slide-in-right {
+    transform: translateX(50px);
+  }
+
+  .image-text-grid.visible {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   .image-text-grid.reverse {
@@ -403,6 +546,19 @@ import Footer from '../components/Footer.astro';
 
   /* Responsive */
   @media (max-width: 1024px) {
+    .hero-globe-container {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .globe-wrapper {
+      height: 500px;
+    }
+
+    .hero-overlay {
+      padding: 3rem 2rem;
+    }
+
     .hero-title {
       font-size: 2.5rem;
     }
@@ -427,16 +583,12 @@ import Footer from '../components/Footer.astro';
   }
 
   @media (max-width: 768px) {
-    .about-hero {
-      margin-top: 60px;
+    .globe-wrapper {
+      height: 400px;
     }
 
-    .hero-image-container {
-      height: 500px;
-    }
-
-    .hero-content {
-      padding: 0 1.5rem;
+    .hero-overlay {
+      padding: 2rem 1.5rem;
     }
 
     .hero-title {
@@ -473,3 +625,28 @@ import Footer from '../components/Footer.astro';
     }
   }
 </style>
+
+<script>
+  // Intersection Observer for sliding animations
+  if (typeof window !== 'undefined') {
+    const observerOptions = {
+      threshold: 0.15,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Observe all slide-in elements
+    document.addEventListener('DOMContentLoaded', () => {
+      const slideElements = document.querySelectorAll('.slide-in-left, .slide-in-right');
+      slideElements.forEach((el) => observer.observe(el));
+    });
+  }
+</script>

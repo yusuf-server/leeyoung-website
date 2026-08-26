@@ -58,6 +58,7 @@
   import { CartManager, type Cart } from '../lib/cart-manager';
   import { gsap } from '../lib/gsap';
   import analytics from '../lib/analytics';
+  import { showError } from '../lib/alert';
 
   // ==================== 购物车状态 ====================
   let currentCart: Cart | null = null;
@@ -280,7 +281,7 @@
         }
       } catch (error) {
         console.error('Failed to update cart:', error);
-        alert('Failed to update cart. Please try again.');
+        showError('Failed to update cart. Please try again.');
       }
     });
   }

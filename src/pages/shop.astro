@@ -26,18 +26,21 @@ let maxPrice = 500; // 默认值
 const productVariations: Record<number, any[]> = {};
 
 try {
-  // 获取所有分类
-  categories = await getProductCategories({
-    per_page: 100,
-    parent: 0, // 只获取顶级分类
-    env,
-  });
+  // 并行获取分类和标签
+  const [categoriesResult, tagsResult] = await Promise.all([
+    getProductCategories({
+      per_page: 100,
+      parent: 0,
+      env,
+    }),
+    getProductTags({
+      per_page: 100,
+      env,
+    })
+  ]);
 
-  // 获取所有产品标签（用于 Material 过滤）
-  tags = await getProductTags({
-    per_page: 100,
-    env,
-  });
+  categories = categoriesResult;
+  tags = tagsResult;
 
   // 根据分类 slug 查找分类 ID
   let categoryId: string | undefined = undefined;
@@ -62,40 +65,45 @@ try {
     productParams.category = categoryId;
   }
 
-  // 获取产品（第一页，12个产品）
-  products = await getProducts(productParams);
-
-  // 获取每个可变产品的变体
-  for (const product of products) {
-    if (product.type === 'variable') {
-      try {
-        const variations = await getProductVariations(product.id, env);
-        productVariations[product.id] = variations;
-      } catch (e) {
-        console.error(`Failed to fetch variations for product ${product.id}:`, e);
-        productVariations[product.id] = [];
-      }
-    }
-  }
-
-  // 获取所有产品以计算总数（不应用分类过滤，获取全部产品数量）
-  const allProductsForCount = await getProducts({ per_page: 100, env });
-  allProductsCount = allProductsForCount.length;
-
-  // 获取当前分类的产品以计算最高价格和分页
+  // 并行获取：第一页产品 + 所有产品（用于计算总数和价格）
   const allProductsParams: any = { per_page: 100, env };
   if (categoryId) {
     allProductsParams.category = categoryId;
   }
-  const allProducts = await getProducts(allProductsParams);
+
+  const [productsResult, allProducts] = await Promise.all([
+    getProducts(productParams),
+    getProducts(allProductsParams)
+  ]);
+
+  products = productsResult;
   totalProducts = allProducts.length;
   totalPages = Math.ceil(totalProducts / perPage);
+  allProductsCount = allProducts.length;
 
   // 计算最高价格
   if (allProducts.length > 0) {
     const prices = allProducts.map((p: WooProduct) => parseFloat(p.price) || 0);
-    maxPrice = Math.ceil(Math.max(...prices)); // 向上取整
+    maxPrice = Math.ceil(Math.max(...prices));
   }
+
+  // 并行获取所有可变产品的变体
+  const variationPromises = products
+    .filter(product => product.type === 'variable')
+    .map(async (product) => {
+      try {
+        const variations = await getProductVariations(product.id, env);
+        return { productId: product.id, variations };
+      } catch (e) {
+        console.error(`Failed to fetch variations for product ${product.id}:`, e);
+        return { productId: product.id, variations: [] };
+      }
+    });
+
+  const variationsResults = await Promise.all(variationPromises);
+  variationsResults.forEach(({ productId, variations }) => {
+    productVariations[productId] = variations;
+  });
 
 } catch (e) {
   console.error('Failed to fetch WooCommerce data:', e);
@@ -452,6 +460,7 @@ try {
   import { gsap } from '../lib/gsap';
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
   import { SplitText } from 'gsap/SplitText';
+  import { showWarning } from '../lib/alert';
 
   // ==================== 全局状态 ====================
   // 从服务端获取最大价格
@@ -1132,7 +1141,7 @@ try {
   // ==================== 事件监听器 ====================
 
   // Import CartManager
-  import { CartManager } from '../lib/cart';
+  import { CartManager } from '../lib/cart-manager';
 
   // Add to Cart 按钮
   // ==================== 颜色选择逻辑 ====================
@@ -1205,7 +1214,7 @@ try {
 
         // 如果需要颜色但没有选择，提示用户
         if (hasColors && !variationId) {
-          alert('Please select a color first');
+          showWarning('Please select a color first', 'Color Required');
           return;
         }
 

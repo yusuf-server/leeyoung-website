@@ -1,155 +1,296 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
 
-// 从 URL 获取重置参数
+export const prerender = false;
+
+// Get reset parameters from URL
 const { searchParams } = Astro.url;
 const key = searchParams.get('key');
 const login = searchParams.get('login');
 
-// 如果没有参数，重定向到重置密码页面
+// If no parameters, redirect to reset password page
 if (!key || !login) {
   return Astro.redirect('/reset-password');
 }
 ---
 
-<Layout title="设置新密码">
-  <div class="reset-container">
-    <div class="reset-card">
-      <h1>设置新密码</h1>
-      <p class="subtitle">为账户 <strong>{login}</strong> 设置新密码</p>
+<BaseLayout title="Set New Password - LEEYOUNG" description="Set your new password">
+  <Header />
 
-      <form id="resetForm">
-        <input type="hidden" id="key" name="key" value={key} />
-        <input type="hidden" id="login" name="login" value={login} />
-
-        <div class="form-group">
-          <label for="password">新密码</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            minlength="8"
-            placeholder="至少8个字符"
-          />
+  <section class="reset-password-page">
+    <div class="reset-container">
+      <div class="reset-card">
+        <div class="reset-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
         </div>
 
-        <div class="form-group">
-          <label for="confirmPassword">确认新密码</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            required
-            minlength="8"
-            placeholder="再次输入密码"
-          />
+        <h1 class="reset-title">Set New Password</h1>
+        <p class="reset-subtitle">Create a new password for <strong>{login}</strong></p>
+
+        <form id="resetForm" class="reset-form">
+          <input type="hidden" id="key" name="key" value={key} />
+          <input type="hidden" id="login" name="login" value={login} />
+
+          <div class="form-group">
+            <label for="password">New Password</label>
+            <div class="password-input-wrapper">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                minlength="8"
+                placeholder="At least 8 characters"
+              />
+              <button type="button" class="password-toggle" data-toggle="password">
+                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm New Password</label>
+            <div class="password-input-wrapper">
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                required
+                minlength="8"
+                placeholder="Re-enter password"
+              />
+              <button type="button" class="password-toggle" data-toggle="confirmPassword">
+                <svg class="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg class="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="submitBtn" class="submit-btn">
+            Reset Password
+          </button>
+
+          <div id="message" class="message"></div>
+        </form>
+
+        <div class="back-to-login">
+          <span>Remember your password?</span>
+          <a href="/" class="login-link">Back to Login</a>
         </div>
-
-        <button type="submit" id="submitBtn">
-          重置密码
-        </button>
-
-        <div id="message" class="message"></div>
-      </form>
-
-      <a href="/account/login" class="back-link">返回登录</a>
+      </div>
     </div>
-  </div>
-</Layout>
+  </section>
+
+  <Footer />
+</BaseLayout>
 
 <style>
-  .reset-container {
+  /* Header Override */
+  .header {
+    background: #000 !important;
+  }
+
+  .reset-password-page {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+    padding: 8rem 2rem 4rem;
+    position: relative;
+  }
+
+  .reset-password-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .reset-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
   }
 
   .reset-card {
-    background: white;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
     border-radius: 16px;
     padding: 3rem;
-    max-width: 480px;
-    width: 100%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.6s ease-out;
   }
 
-  h1 {
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .reset-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 2rem;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+  }
+
+  .reset-icon svg {
+    color: #fff;
+  }
+
+  .reset-title {
     font-size: 2rem;
-    margin-bottom: 0.5rem;
-    color: #1a202c;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.75rem;
+    color: #000;
   }
 
-  .subtitle {
-    color: #718096;
+  .reset-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 2.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .reset-subtitle strong {
+    color: #000;
+    font-weight: 600;
+  }
+
+  .reset-form {
     margin-bottom: 2rem;
-    font-size: 0.95rem;
-  }
-
-  .subtitle strong {
-    color: #2d3748;
   }
 
   .form-group {
     margin-bottom: 1.5rem;
   }
 
-  label {
+  .form-group label {
     display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
     margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #2d3748;
+    color: #333;
   }
 
-  input[type="password"] {
+  .password-input-wrapper {
+    position: relative;
+  }
+
+  .form-group input {
     width: 100%;
-    padding: 0.875rem;
-    border: 2px solid #e2e8f0;
+    padding: 0.875rem 1rem;
+    padding-right: 3rem;
+    border: 1px solid #d1d5db;
     border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.2s;
+    font-size: 0.9375rem;
+    transition: all 0.2s;
+    background: #fff;
   }
 
-  input[type="password"]:focus {
+  .form-group input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
   }
 
-  button {
+  .password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .password-toggle:hover {
+    color: #000;
+  }
+
+  .submit-btn {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: #fff;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s, opacity 0.2s;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
   }
 
-  button:hover {
+  .submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
   }
 
-  button:active {
+  .submit-btn:active {
     transform: translateY(0);
   }
 
-  button:disabled {
+  .submit-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
   }
 
   .message {
     margin-top: 1rem;
-    padding: 0.875rem;
+    padding: 0.875rem 1rem;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     display: none;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .message.show {
@@ -157,44 +298,90 @@ if (!key || !login) {
   }
 
   .message.success {
-    background: #c6f6d5;
-    color: #22543d;
-    border: 1px solid #9ae6b4;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
   }
 
   .message.error {
-    background: #fed7d7;
-    color: #742a2a;
-    border: 1px solid #fc8181;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
   }
 
-  .back-link {
-    display: inline-block;
-    margin-top: 1.5rem;
-    color: #667eea;
+  .back-to-login {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #666;
+  }
+
+  .back-to-login span {
+    margin-right: 0.5rem;
+  }
+
+  .login-link {
+    color: #10b981;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-weight: 600;
+    transition: color 0.2s;
   }
 
-  .back-link:hover {
+  .login-link:hover {
+    color: #059669;
     text-decoration: underline;
   }
 
   @media (max-width: 640px) {
-    .reset-card {
-      padding: 2rem;
+    .reset-password-page {
+      padding: 6rem 1.5rem 2rem;
     }
 
-    h1 {
+    .reset-card {
+      padding: 2rem 1.5rem;
+    }
+
+    .reset-icon {
+      width: 64px;
+      height: 64px;
+    }
+
+    .reset-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .reset-title {
       font-size: 1.5rem;
     }
   }
 </style>
 
 <script>
+  import { gsap } from '../../lib/gsap';
+
   const form = document.getElementById('resetForm') as HTMLFormElement;
   const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
   const message = document.getElementById('message') as HTMLDivElement;
+
+  // Password toggle visibility
+  document.querySelectorAll('.password-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-toggle');
+      const input = document.getElementById(targetId!) as HTMLInputElement;
+      const eyeOpen = btn.querySelector('.eye-open') as HTMLElement;
+      const eyeClosed = btn.querySelector('.eye-closed') as HTMLElement;
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeOpen.style.display = 'none';
+        eyeClosed.style.display = 'block';
+      } else {
+        input.type = 'password';
+        eyeOpen.style.display = 'block';
+        eyeClosed.style.display = 'none';
+      }
+    });
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -204,16 +391,22 @@ if (!key || !login) {
     const key = (document.getElementById('key') as HTMLInputElement).value;
     const login = (document.getElementById('login') as HTMLInputElement).value;
 
-    // 验证密码匹配
+    // Validate password match
     if (password !== confirmPassword) {
-      message.textContent = '两次输入的密码不一致';
+      message.textContent = 'Passwords do not match';
       message.classList.add('show', 'error');
       message.classList.remove('success');
+
+      // Shake animation
+      gsap.fromTo(message,
+        { x: -10 },
+        { x: 10, duration: 0.1, repeat: 3, yoyo: true, ease: 'power2.inOut' }
+      );
       return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = '重置中...';
+    submitBtn.textContent = 'Resetting...';
     message.classList.remove('show', 'success', 'error');
 
     try {
@@ -232,24 +425,45 @@ if (!key || !login) {
       const data = await response.json();
 
       if (response.ok) {
-        message.textContent = '密码重置成功！3秒后跳转到登录页面...';
+        message.textContent = 'Password reset successfully! Redirecting to login in 3 seconds...';
         message.classList.add('show', 'success');
         form.reset();
 
+        // Animate message
+        gsap.from(message, {
+          opacity: 0,
+          y: -10,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+
         setTimeout(() => {
-          window.location.href = '/account/login';
+          window.location.href = '/';
         }, 3000);
       } else {
-        message.textContent = data.error || '重置失败，请重试或重新申请重置链接';
+        message.textContent = data.error || 'Reset failed. Please try again or request a new reset link.';
         message.classList.add('show', 'error');
+
+        // Shake animation on error
+        gsap.fromTo(message,
+          { x: -10 },
+          { x: 10, duration: 0.1, repeat: 3, yoyo: true, ease: 'power2.inOut' }
+        );
       }
     } catch (error) {
-      message.textContent = '网络错误，请稍后重试';
+      message.textContent = 'Network error. Please try again later.';
       message.classList.add('show', 'error');
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = '重置密码';
+      submitBtn.textContent = 'Reset Password';
     }
   });
+
+  // Entrance animations
+  gsap.from('.reset-card', {
+    opacity: 0,
+    y: 30,
+    duration: 0.6,
+    ease: 'power2.out'
+  });
 </script>
-</Layout>
