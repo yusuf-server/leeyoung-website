@@ -7,30 +7,9 @@ import ProductFAQ from '../../components/ProductFAQ.astro';
 import { getProducts, getProductReviews, getProductVariations, type WooProduct, type WooVariation, type UsageRating, type FeatureCard, type WooReview } from '../../lib/woocommerce';
 import { getEnv } from '../../lib/env';
 
-// 图片优化函数 - 使用适当尺寸的缩略图
+// 图片优化函数 - 直接返回原始 URL，不做修改
 function optimizeImageUrl(url: string, size: 'thumbnail' | 'medium' | 'large' = 'large'): string {
-  if (!url) return url;
-
-  // 如果是 WordPress 图片，替换为适当尺寸
-  // -scaled.png 是原图，通常很大
-  if (url.includes('-scaled.')) {
-    // 移除 -scaled 后缀，WordPress会自动返回原图
-    url = url.replace('-scaled.', '.');
-  }
-
-  // 对于画廊图片，使用中等尺寸（最大1024px）
-  // WordPress 通常会生成这些尺寸：thumbnail (150x150), medium (300x300), large (1024x1024)
-  const sizeMap = {
-    'thumbnail': '-300x300',
-    'medium': '-768x768',
-    'large': '-1024x1024'
-  };
-
-  const sizeSuffix = sizeMap[size];
-  const extension = url.match(/\.(jpg|jpeg|png|gif|webp)$/i)?.[0] || '.png';
-
-  // 在扩展名前插入尺寸后缀
-  return url.replace(new RegExp(extension + '$', 'i'), `${sizeSuffix}${extension}`);
+  return url || '';
 }
 
 // 启用服务器端渲染
@@ -824,22 +803,24 @@ if (specifications.length === 0) {
             <div class="swiper-wrapper">
               {galleryImages.map((imageUrl, index) => (
                 <div class="swiper-slide">
-                  <a href={imageUrl} class="gallery-slide-link" data-lightbox-trigger={index} target="_blank">
+                  <div class="gallery-slide-link" data-lightbox-trigger={index}>
                     <div class="gallery-image-container">
                       <img
-                        src={optimizeImageUrl(imageUrl, 'medium')}
+                        src={imageUrl}
                         alt={`${product.name} Gallery Image ${index + 1}`}
                         class="gallery-image"
                         loading="eager"
-                        srcset={`
-                          ${optimizeImageUrl(imageUrl, 'thumbnail')} 300w,
-                          ${optimizeImageUrl(imageUrl, 'medium')} 768w,
-                          ${optimizeImageUrl(imageUrl, 'large')} 1024w
-                        `}
-                        sizes="(max-width: 480px) 100vw, (max-width: 768px) 90vw, 50vw"
                       />
+                      <div class="gallery-zoom-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="11" cy="11" r="8"></circle>
+                          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                          <line x1="11" y1="8" x2="11" y2="14"></line>
+                          <line x1="8" y1="11" x2="14" y2="11"></line>
+                        </svg>
+                      </div>
                     </div>
-                  </a>
+                  </div>
                 </div>
               ))}
             </div>
@@ -854,6 +835,35 @@ if (specifications.length === 0) {
         </div>
       </div>
     </section>
+  )}
+
+  <!-- Lightbox Modal -->
+  {galleryImages.length > 0 && (
+    <div class="lightbox-modal" id="lightboxModal">
+      <div class="lightbox-overlay"></div>
+      <button class="lightbox-close" aria-label="Close lightbox">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <button class="lightbox-prev" aria-label="Previous image">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button class="lightbox-next" aria-label="Next image">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+      <div class="lightbox-content">
+        <img src="" alt="" id="lightboxImage" />
+        <div class="lightbox-counter">
+          <span id="lightboxCurrent">1</span> / <span id="lightboxTotal">{galleryImages.length}</span>
+        </div>
+      </div>
+    </div>
   )}
 
   <!-- Technical Specification Section -->
@@ -2308,15 +2318,92 @@ if (specifications.length === 0) {
       });
     }
 
-    // Gallery lightbox click handlers
+    // Gallery lightbox functionality
     const galleryItems = document.querySelectorAll('[data-lightbox-trigger]');
+    const lightboxModal = document.getElementById('lightboxModal');
+    const lightboxImage = document.getElementById('lightboxImage') as HTMLImageElement;
+    const lightboxCurrent = document.getElementById('lightboxCurrent');
+    const lightboxClose = lightboxModal?.querySelector('.lightbox-close');
+    const lightboxPrev = lightboxModal?.querySelector('.lightbox-prev');
+    const lightboxNext = lightboxModal?.querySelector('.lightbox-next');
+    const lightboxOverlay = lightboxModal?.querySelector('.lightbox-overlay');
+
+    let currentImageIndex = 0;
+    const galleryImagesArray: string[] = [];
+
+    // Collect all gallery image URLs
+    galleryItems.forEach((item) => {
+      const img = item.querySelector('.gallery-image') as HTMLImageElement;
+      if (img && img.src) {
+        galleryImagesArray.push(img.src);
+      }
+    });
+
+    function showLightboxImage(index: number) {
+      if (index < 0) index = galleryImagesArray.length - 1;
+      if (index >= galleryImagesArray.length) index = 0;
+
+      currentImageIndex = index;
+
+      if (lightboxImage) {
+        lightboxImage.src = galleryImagesArray[index];
+        lightboxImage.alt = `Gallery Image ${index + 1}`;
+      }
+
+      if (lightboxCurrent) {
+        lightboxCurrent.textContent = String(index + 1);
+      }
+    }
+
+    function openLightbox(index: number) {
+      if (lightboxModal) {
+        lightboxModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        showLightboxImage(index);
+      }
+    }
+
+    function closeLightbox() {
+      if (lightboxModal) {
+        lightboxModal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Open lightbox on gallery item click
     galleryItems.forEach((item) => {
       item.addEventListener('click', (e) => {
         e.preventDefault();
         const index = parseInt(item.getAttribute('data-lightbox-trigger') || '0');
-        // Open lightbox at this index (can be implemented with existing lightbox)
-        console.log('Open gallery at index:', index);
+        openLightbox(index);
       });
+    });
+
+    // Close lightbox
+    lightboxClose?.addEventListener('click', closeLightbox);
+    lightboxOverlay?.addEventListener('click', closeLightbox);
+
+    // Previous image
+    lightboxPrev?.addEventListener('click', () => {
+      showLightboxImage(currentImageIndex - 1);
+    });
+
+    // Next image
+    lightboxNext?.addEventListener('click', () => {
+      showLightboxImage(currentImageIndex + 1);
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (!lightboxModal?.classList.contains('active')) return;
+
+      if (e.key === 'Escape') {
+        closeLightbox();
+      } else if (e.key === 'ArrowLeft') {
+        showLightboxImage(currentImageIndex - 1);
+      } else if (e.key === 'ArrowRight') {
+        showLightboxImage(currentImageIndex + 1);
+      }
     });
   }
 
@@ -4570,7 +4657,8 @@ if (specifications.length === 0) {
     position: relative;
   }
 
-  .gallery-slider::before,
+  /* 淡出效果已移除 */
+  /* .gallery-slider::before,
   .gallery-slider::after {
     content: '';
     position: absolute;
@@ -4589,7 +4677,7 @@ if (specifications.length === 0) {
   .gallery-slider::after {
     right: 0;
     background: linear-gradient(to left, #000 0%, transparent 100%);
-  }
+  } */
 
   .gallery-swiper {
     width: 100%;
@@ -4622,6 +4710,33 @@ if (specifications.length === 0) {
     background: #111;
     transform: translateZ(0);
     backface-visibility: hidden;
+    position: relative;
+    border-radius: 12px;
+  }
+
+  .gallery-image-container:hover .gallery-zoom-icon {
+    opacity: 1;
+  }
+
+  .gallery-zoom-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .gallery-zoom-icon svg {
+    color: #fff;
   }
 
   .gallery-image {
@@ -4634,6 +4749,11 @@ if (specifications.length === 0) {
     will-change: transform;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    transition: transform 0.3s;
+  }
+
+  .gallery-slide-link:hover .gallery-image {
+    transform: scale(1.05);
   }
 
   .gallery-swiper .swiper-button-prev,
@@ -4684,6 +4804,107 @@ if (specifications.length === 0) {
     background: #fff;
     width: 24px;
     border-radius: 4px;
+  }
+
+  /* ==================== Lightbox Modal ==================== */
+  .lightbox-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+  }
+
+  .lightbox-modal.active {
+    display: flex;
+  }
+
+  .lightbox-overlay {
+    position: absolute;
+    inset: 0;
+    cursor: zoom-out;
+  }
+
+  .lightbox-content {
+    position: relative;
+    z-index: 1;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .lightbox-content img {
+    max-width: 100%;
+    max-height: 85vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  .lightbox-counter {
+    margin-top: 1rem;
+    color: #fff;
+    font-size: 0.875rem;
+    opacity: 0.8;
+  }
+
+  .lightbox-close,
+  .lightbox-prev,
+  .lightbox-next {
+    position: absolute;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+  }
+
+  .lightbox-close:hover,
+  .lightbox-prev:hover,
+  .lightbox-next:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+
+  .lightbox-close {
+    top: 2rem;
+    right: 2rem;
+  }
+
+  .lightbox-prev {
+    left: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .lightbox-prev:hover {
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .lightbox-next {
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .lightbox-next:hover {
+    transform: translateY(-50%) scale(1.1);
   }
 
   /* ==================== Technical Specification ==================== */
@@ -5827,14 +6048,16 @@ if (specifications.length === 0) {
       font-size: 1.75rem;
     }
 
-    .gallery-slider::before,
+    /* 移动端淡出效果已移除 */
+    /* .gallery-slider::before,
     .gallery-slider::after {
       width: 80px;
-    }
+    } */
 
     .gallery-slide-link {
       width: calc(100vw - 3rem);
-      height: 240px;
+      height: auto;
+      aspect-ratio: 16 / 11;
     }
 
     .gallery-swiper .swiper-button-prev,
@@ -5854,6 +6077,40 @@ if (specifications.length === 0) {
     .gallery-swiper .swiper-button-prev::after,
     .gallery-swiper .swiper-button-next::after {
       font-size: 16px;
+    }
+
+    /* Lightbox 移动端样式 */
+    .lightbox-close,
+    .lightbox-prev,
+    .lightbox-next {
+      width: 40px;
+      height: 40px;
+    }
+
+    .lightbox-close {
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .lightbox-prev {
+      left: 1rem;
+    }
+
+    .lightbox-next {
+      right: 1rem;
+    }
+
+    .lightbox-content {
+      max-width: 95vw;
+      max-height: 95vh;
+    }
+
+    .lightbox-content img {
+      max-height: 80vh;
+    }
+
+    .lightbox-counter {
+      font-size: 0.75rem;
     }
 
     /* Specification Section */
