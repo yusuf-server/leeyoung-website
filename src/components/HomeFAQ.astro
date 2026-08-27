@@ -1,0 +1,568 @@
+---
+// FAQ 数据
+const faqs = [
+  {
+    question: "How is Leeyoung different from standard folding hand trucks?",
+    answer: "Many folding hand trucks prioritize compact size and low cost. Leeyoung focuses on structural strength, balance, and durability — so performance remains consistent over time.",
+    meta: "Quality",
+  },
+  {
+    question: "Can I fold and store it easily?",
+    answer: "Yes. Leeyoung hand trucks fold quickly and compactly, without compromising the structure or stability.",
+    meta: "Storage",
+  },
+  {
+    question: "Is it easy to maneuver?",
+    answer: "Yes. Ergonomic handles and large, smooth-rolling wheels make it easy to navigate tight spaces while keeping loads balanced.",
+    meta: "Usability",
+  },
+  {
+    question: "Will it fit standard doorways or stairs?",
+    answer: "Yes. Designed with common household and commercial dimensions in mind, while maintaining stability on stairs and uneven surfaces.",
+    meta: "Design",
+  },
+  {
+    question: "What is the maximum load capacity?",
+    answer: "Each model clearly lists its capacity. Leeyoung hand trucks maintain stability even at full rated weight.",
+    meta: "Performance",
+  },
+];
+---
+
+<section class="home-faq" data-faq-section>
+  <!-- 背景层 -->
+  <div class="faq-background"></div>
+  <div class="faq-overlay"></div>
+
+  <div class="faq-container">
+    <!-- 动画标签 -->
+    <div class="faq-intro" data-faq-intro>
+      <span class="faq-intro__beam" aria-hidden="true"></span>
+      <span class="faq-intro__pulse" aria-hidden="true"></span>
+      <span class="faq-intro__label">Leeyoung FAQ</span>
+      <span class="faq-intro__meter" aria-hidden="true"></span>
+      <span class="faq-intro__tick" aria-hidden="true"></span>
+    </div>
+
+    <!-- 标题区域 -->
+    <header class="faq-header">
+      <div class="faq-header-content">
+        <p class="faq-header-eyebrow">Frequently Asked Questions</p>
+        <h2 class="faq-header-title">Built for strength, designed for clarity.</h2>
+        <p class="faq-header-description">
+          Everything you need to know about Leeyoung hand trucks — engineered for durability, tested for real-world performance.
+        </p>
+      </div>
+    </header>
+
+    <!-- FAQ 列表 -->
+    <ul class="faq-list">
+      {faqs.map((item, index) => (
+        <li class="faq-item" data-faq-item data-faq-index={index}>
+          <button
+            type="button"
+            class="faq-button"
+            data-faq-button
+            aria-expanded="false"
+            aria-controls={`faq-panel-${index}`}
+            id={`faq-trigger-${index}`}
+          >
+            <span class="faq-icon-wrapper">
+              <span class="faq-icon-ring"></span>
+              <svg class="faq-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                <path d="M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </span>
+
+            <div class="faq-content">
+              <div class="faq-question-wrapper">
+                <h3 class="faq-question">{item.question}</h3>
+                {item.meta && (
+                  <span class="faq-meta">{item.meta}</span>
+                )}
+              </div>
+
+              <div
+                class="faq-answer"
+                id={`faq-panel-${index}`}
+                role="region"
+                aria-labelledby={`faq-trigger-${index}`}
+              >
+                <p>{item.answer}</p>
+              </div>
+            </div>
+          </button>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script>
+  // FAQ 交互逻辑
+  const faqItems = document.querySelectorAll('[data-faq-item]');
+  let activeIndex = -1;
+
+  faqItems.forEach((item, index) => {
+    const button = item.querySelector('[data-faq-button]');
+    const answer = item.querySelector('.faq-answer');
+    const icon = item.querySelector('.faq-icon');
+
+    if (!button || !answer || !icon) return;
+
+    // 鼠标移动光晕效果
+    item.addEventListener('mousemove', (e) => {
+      const rect = item.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      item.style.setProperty('--faq-x', `${x}px`);
+      item.style.setProperty('--faq-y', `${y}px`);
+    });
+
+    item.addEventListener('mouseleave', () => {
+      item.style.removeProperty('--faq-x');
+      item.style.removeProperty('--faq-y');
+    });
+
+    // 点击展开/收起
+    button.addEventListener('click', () => {
+      const isOpen = activeIndex === index;
+
+      // 关闭所有其他项
+      faqItems.forEach((otherItem, otherIndex) => {
+        if (otherIndex !== index) {
+          const otherButton = otherItem.querySelector('[data-faq-button]');
+          const otherAnswer = otherItem.querySelector('.faq-answer');
+          const otherIcon = otherItem.querySelector('.faq-icon');
+
+          otherItem.classList.remove('faq-item--open');
+          otherButton?.setAttribute('aria-expanded', 'false');
+          if (otherAnswer) otherAnswer.style.maxHeight = '0';
+          otherIcon?.classList.remove('faq-icon--open');
+        }
+      });
+
+      if (isOpen) {
+        // 关闭当前项
+        item.classList.remove('faq-item--open');
+        button.setAttribute('aria-expanded', 'false');
+        answer.style.maxHeight = '0';
+        icon.classList.remove('faq-icon--open');
+        activeIndex = -1;
+      } else {
+        // 打开当前项
+        item.classList.add('faq-item--open');
+        button.setAttribute('aria-expanded', 'true');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+        icon.classList.add('faq-icon--open');
+        activeIndex = index;
+      }
+    });
+  });
+
+  // Intro 动画
+  const intro = document.querySelector('[data-faq-intro]');
+  if (intro) {
+    requestAnimationFrame(() => {
+      intro.classList.add('faq-intro--active');
+    });
+  }
+</script>
+
+<style>
+  /* ==================== 主容器 ==================== */
+  .home-faq {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background: #0a0a0a;
+    color: #f8fafc;
+  }
+
+  .faq-background {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 50% 100% at 10% 0%, rgba(226, 232, 240, 0.15), transparent 65%), #000000;
+  }
+
+  .faq-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(130deg, rgba(255, 255, 255, 0.04) 0%, transparent 65%);
+    mix-blend-mode: screen;
+    opacity: 0.8;
+  }
+
+  .faq-container {
+    position: relative;
+    z-index: 10;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 6rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* ==================== Intro 动画标签 ==================== */
+  .faq-intro {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1.4rem;
+    border-radius: 9999px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(12, 12, 12, 0.42);
+    color: rgba(248, 250, 252, 0.92);
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    font-size: 0.65rem;
+    width: 100%;
+    max-width: 24rem;
+    margin: 0 auto;
+    mix-blend-mode: screen;
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+    filter: blur(8px);
+    transition: opacity 720ms ease, transform 720ms ease, filter 720ms ease;
+  }
+
+  .faq-intro--active {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+
+  .faq-intro__beam,
+  .faq-intro__pulse {
+    position: absolute;
+    inset: -110%;
+    pointer-events: none;
+    border-radius: 50%;
+  }
+
+  .faq-intro__beam {
+    background: conic-gradient(from 160deg, rgba(226, 232, 240, 0.25), transparent 32%, rgba(148, 163, 184, 0.22) 58%, transparent 78%, rgba(148, 163, 184, 0.18));
+    animation: faq-beam-spin 18s linear infinite;
+    opacity: 0.55;
+  }
+
+  .faq-intro__pulse {
+    border: 1px solid currentColor;
+    opacity: 0.25;
+    animation: faq-pulse 3.4s ease-out infinite;
+  }
+
+  .faq-intro__label {
+    position: relative;
+    z-index: 1;
+    font-weight: 600;
+    letter-spacing: 0.4em;
+  }
+
+  .faq-intro__meter {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, currentColor 35%, transparent 85%);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: faq-meter 5.8s ease-in-out infinite;
+    opacity: 0.7;
+  }
+
+  .faq-intro__tick {
+    position: relative;
+    z-index: 1;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 9999px;
+    background: currentColor;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+    animation: faq-tick 3.2s ease-in-out infinite;
+  }
+
+  /* ==================== 标题区域 ==================== */
+  .faq-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .faq-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faq-header-eyebrow {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  .faq-header-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 600;
+    line-height: 1.2;
+    color: #fff;
+    margin: 0;
+  }
+
+  .faq-header-description {
+    max-width: 600px;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #9ca3af;
+    margin: 0;
+  }
+
+  /* ==================== FAQ 列表 ==================== */
+  .faq-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faq-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    transition: all 0.5s ease;
+    box-shadow: 0 36px 140px -60px rgba(10, 10, 10, 0.95);
+  }
+
+  .faq-item:hover,
+  .faq-item--open {
+    transform: translateY(-2px);
+  }
+
+  .faq-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(240px circle at var(--faq-x, 50%) var(--faq-y, 50%), rgba(255, 255, 255, 0.08), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+  }
+
+  .faq-item:hover::before,
+  .faq-item--open::before {
+    opacity: 1;
+  }
+
+  .faq-button {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1.75rem 2rem;
+    background: transparent;
+    border: none;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .faq-button:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.35);
+    outline-offset: 4px;
+  }
+
+  /* ==================== 图标 ==================== */
+  .faq-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.5s;
+  }
+
+  .faq-item:hover .faq-icon-wrapper {
+    transform: scale(1.05);
+  }
+
+  .faq-icon-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0.3;
+  }
+
+  .faq-item--open .faq-icon-ring {
+    animation: faq-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .faq-icon {
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #fff;
+    transition: transform 0.5s;
+  }
+
+  .faq-icon--open {
+    transform: rotate(45deg);
+  }
+
+  /* ==================== 内容 ==================== */
+  .faq-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .faq-question-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .faq-question {
+    flex: 1;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    font-weight: 500;
+    line-height: 1.4;
+    color: #fff;
+    margin: 0;
+  }
+
+  .faq-meta {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: #9ca3af;
+    transition: opacity 0.3s;
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    font-size: 0.875rem;
+    line-height: 1.8;
+    color: #9ca3af;
+    transition: max-height 0.5s ease;
+  }
+
+  .faq-answer p {
+    margin: 0;
+    padding-right: 0.5rem;
+  }
+
+  /* ==================== 动画 ==================== */
+  @keyframes faq-beam-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes faq-pulse {
+    0% { transform: scale(0.7); opacity: 0.55; }
+    60% { opacity: 0.1; }
+    100% { transform: scale(1.25); opacity: 0; }
+  }
+
+  @keyframes faq-meter {
+    0%, 20% { transform: scaleX(0); transform-origin: left; }
+    45%, 60% { transform: scaleX(1); transform-origin: left; }
+    80%, 100% { transform: scaleX(0); transform-origin: right; }
+  }
+
+  @keyframes faq-tick {
+    0%, 30% { transform: translateX(-6px); opacity: 0.4; }
+    50% { transform: translateX(2px); opacity: 1; }
+    100% { transform: translateX(20px); opacity: 0; }
+  }
+
+  @keyframes faq-ping {
+    75%, 100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  /* ==================== 移动端适配 ==================== */
+  @media (max-width: 768px) {
+    .faq-container {
+      padding: 4rem 1rem;
+      gap: 2rem;
+    }
+
+    .faq-intro {
+      font-size: 0.55rem;
+      padding: 0.75rem 1.2rem;
+      gap: 0.65rem;
+    }
+
+    .faq-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .faq-header-title {
+      font-size: 1.75rem;
+    }
+
+    .faq-header-description {
+      font-size: 0.875rem;
+    }
+
+    .faq-button {
+      padding: 1.5rem 1.25rem;
+      gap: 1rem;
+    }
+
+    .faq-icon-wrapper {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .faq-icon {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .faq-question {
+      font-size: 1rem;
+    }
+
+    .faq-meta {
+      font-size: 0.55rem;
+      padding: 0.2rem 0.6rem;
+    }
+
+    .faq-answer {
+      font-size: 0.8rem;
+    }
+  }
+</style>
