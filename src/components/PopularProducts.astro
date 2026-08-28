@@ -252,18 +252,38 @@ const products: Product[] = await Promise.all(
           dots = generateDots();
           setupDotEvents();
           updateActiveDot();
-          updateButtons();
         }
+
+        // 总是更新按钮状态，即使页数没变
+        updateButtons();
       }, 300);
     });
 
     // 获取当前页码
     function getCurrentPage() {
       const scrollLeft = slider.scrollLeft;
-      const cardWidth = 340 + 32; // 卡片宽度 + gap
+      const scrollWidth = slider.scrollWidth;
+      const clientWidth = slider.clientWidth;
+      const maxScroll = scrollWidth - clientWidth;
+
+      // 如果接近末尾（距离末尾小于 50px），认为是最后一页
+      if (maxScroll - scrollLeft < 50) {
+        const totalPages = getTotalPages();
+        return totalPages - 1;
+      }
+
+      // 如果接近开头（小于 50px），认为是第一页
+      if (scrollLeft < 50) {
+        return 0;
+      }
+
+      // 否则根据滚动比例计算
+      const cardWidth = 340 + 32;
       const cardsPerPage = getCardsPerPage();
       const pageWidth = cardsPerPage * cardWidth;
-      return Math.round(scrollLeft / pageWidth);
+      const page = Math.round(scrollLeft / pageWidth);
+
+      return page;
     }
 
     // 滚动到指定页
