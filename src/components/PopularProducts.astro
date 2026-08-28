@@ -341,6 +341,19 @@ const products: Product[] = await Promise.all(
       const currentPage = getCurrentPage();
       const totalPages = getTotalPages();
 
+      // 如果只有一页，隐藏导航按钮和分页器
+      if (totalPages <= 1) {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        dotsContainer.style.display = 'none';
+        return;
+      }
+
+      // 显示导航按钮和分页器
+      prevBtn.style.display = 'flex';
+      nextBtn.style.display = 'flex';
+      dotsContainer.style.display = 'flex';
+
       // 更新前一个按钮
       if (currentPage <= 0) {
         prevBtn.style.opacity = '0.3';
