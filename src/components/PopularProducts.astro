@@ -197,161 +197,13 @@ const products: Product[] = await Promise.all(
 </section>
 
 <script>
-  import { gsap } from '../lib/gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  // 标题动画
-  gsap.from('[data-popular="badge"]', {
-    scrollTrigger: {
-      trigger: '.popular-products',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
-    },
-    y: 20,
-    opacity: 0,
-    duration: 0.6,
-  });
-
-  gsap.from('[data-popular="title"]', {
-    scrollTrigger: {
-      trigger: '.popular-products',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
-    },
-    y: 30,
-    opacity: 0,
-    duration: 0.8,
-    delay: 0.1,
-  });
-
-  gsap.from('[data-popular="nav"]', {
-    scrollTrigger: {
-      trigger: '.popular-products',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
-    },
-    x: 20,
-    opacity: 0,
-    duration: 0.6,
-    delay: 0.2,
-  });
-
-  // 产品卡片交错动画
-  gsap.utils.toArray('[data-product-card]').forEach((card: any, index) => {
-    gsap.from(card, {
-      scrollTrigger: {
-        trigger: card,
-        start: 'top 90%',
-        toggleActions: 'play none none reverse',
-      },
-      y: 60,
-      opacity: 0,
-      duration: 0.8,
-      delay: index * 0.1,
-      ease: 'power2.out',
-    });
-
-    // 卡片悬停动画
-    const cardHoverTL = gsap.timeline({ paused: true });
-    const img = card.querySelector('img');
-    const addToCartBtn = card.querySelector('.add-to-cart');
-    const productName = card.querySelector('.product-name');
-
-    cardHoverTL
-      .to(img, {
-        scale: 1.05,
-        duration: 0.6,
-        ease: 'power2.out',
-      }, 0)
-      .to(addToCartBtn, {
-        scale: 1.1,
-        rotate: 5,
-        duration: 0.3,
-        ease: 'back.out(1.7)',
-      }, 0)
-      .to(productName, {
-        x: 5,
-        duration: 0.3,
-        ease: 'power2.out',
-      }, 0);
-
-    card.addEventListener('mouseenter', () => cardHoverTL.play());
-    card.addEventListener('mouseleave', () => cardHoverTL.reverse());
-
-    // 徽章动画（如果存在）
-    const badge = card.querySelector('.product-badge');
-    if (badge) {
-      gsap.from(badge, {
-        scrollTrigger: {
-          trigger: card,
-          start: 'top 85%',
-          toggleActions: 'play none none reverse',
-        },
-        scale: 0,
-        rotation: -180,
-        opacity: 0,
-        duration: 0.5,
-        delay: index * 0.1 + 0.3,
-        ease: 'back.out(1.7)',
-      });
-    }
-
-    // 价格数字递增动画
-    const priceValue = card.querySelector('.price-value');
-    if (priceValue) {
-      const priceText = priceValue.textContent || '';
-      const priceNumber = parseFloat(priceText.replace(/[$,]/g, ''));
-
-      if (!isNaN(priceNumber)) {
-        const priceObj = { value: 0 };
-
-        gsap.to(priceObj, {
-          value: priceNumber,
-          duration: 1.5,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: card,
-            start: 'top 85%',
-            toggleActions: 'play none none reverse',
-          },
-          onUpdate() {
-            priceValue.textContent = `$${priceObj.value.toFixed(2)}`;
-          },
-        });
-      }
-    }
-
-    // 特性列表逐条动画
-    const features = card.querySelectorAll('.product-features li');
-    features.forEach((feature: any, i: number) => {
-      gsap.from(feature, {
-        scrollTrigger: {
-          trigger: card,
-          start: 'top 85%',
-          toggleActions: 'play none none reverse',
-        },
-        x: -20,
-        opacity: 0,
-        duration: 0.5,
-        delay: index * 0.1 + i * 0.05,
-        ease: 'power2.out',
-      });
-    });
-  });
-
-  // 滚动导航
+  // 滚动导航（移除所有 GSAP 动画）
   const slider = document.getElementById('productsSlider');
   const prevBtn = document.getElementById('productPrev');
   const nextBtn = document.getElementById('productNext');
   const dotsContainer = document.getElementById('paginationDots');
 
   if (slider && prevBtn && nextBtn && dotsContainer) {
-    let autoScrollTween: gsap.core.Tween | null = null;
-    let isHovering = false;
-    let isManualScrolling = false;
-    let manualScrollTimer: number | null = null;
-    let scrollTimer: number | null = null;
-
     const cards = slider.querySelectorAll('.product-card');
     const totalCards = cards.length;
 
@@ -415,52 +267,27 @@ const products: Product[] = await Promise.all(
     }
 
     // 滚动到指定页
-    function scrollToPage(pageIndex: number, duration = 0.8) {
+    function scrollToPage(pageIndex: number) {
       const cardsPerPage = getCardsPerPage();
       const cardWidth = 340 + 32; // 卡片宽度 + gap
       const pageWidth = cardsPerPage * cardWidth;
       const targetScroll = pageIndex * pageWidth;
 
-      if (autoScrollTween) autoScrollTween.kill();
-      isManualScrolling = true;
-
-      gsap.to(slider, {
-        scrollLeft: targetScroll,
-        duration: duration,
-        ease: 'power3.out',
-        onComplete: () => {
-          updateActiveDot();
-          if (manualScrollTimer) clearTimeout(manualScrollTimer);
-          manualScrollTimer = window.setTimeout(() => {
-            isManualScrolling = false;
-            if (!isHovering) startAutoScroll();
-          }, 3000);
-        },
+      slider.scrollTo({
+        left: targetScroll,
+        behavior: 'smooth'
       });
     }
 
     // 更新活动 dot
     function updateActiveDot() {
       const currentPage = getCurrentPage();
-      const totalPages = getTotalPages();
 
       dots.forEach((dot, index) => {
         if (index === currentPage) {
           dot.classList.add('active');
-          gsap.to(dot, {
-            scale: 1,
-            opacity: 1,
-            duration: 0.3,
-            ease: 'power2.out',
-          });
         } else {
           dot.classList.remove('active');
-          gsap.to(dot, {
-            scale: 0.7,
-            opacity: 0.5,
-            duration: 0.3,
-            ease: 'power2.out',
-          });
         }
       });
     }
@@ -473,28 +300,7 @@ const products: Product[] = await Promise.all(
         dot.replaceWith(newDot);
 
         newDot.addEventListener('click', () => {
-          scrollToPage(index, 0.8);
-        });
-
-        // 添加悬停效果
-        newDot.addEventListener('mouseenter', () => {
-          if (!newDot.classList.contains('active')) {
-            gsap.to(newDot, {
-              scale: 0.85,
-              opacity: 0.7,
-              duration: 0.2,
-            });
-          }
-        });
-
-        newDot.addEventListener('mouseleave', () => {
-          if (!newDot.classList.contains('active')) {
-            gsap.to(newDot, {
-              scale: 0.7,
-              opacity: 0.5,
-              duration: 0.2,
-            });
-          }
+          scrollToPage(index);
         });
       });
 
@@ -505,100 +311,20 @@ const products: Product[] = await Promise.all(
     // 初始化dots事件
     setupDotEvents();
 
-    // 自动滚动
-    function startAutoScroll() {
-      if (isHovering || isManualScrolling) return;
-
-      const currentPage = getCurrentPage();
-      const totalPages = getTotalPages();
-
-      if (currentPage >= totalPages - 1) {
-        // 最后一页，回到第一页
-        autoScrollTween = gsap.to(slider, {
-          scrollLeft: 0,
-          duration: 1,
-          ease: 'power2.inOut',
-          onComplete: () => {
-            updateActiveDot();
-            setTimeout(() => startAutoScroll(), 2500);
-          },
-        });
-      } else {
-        // 滚动到下一页
-        const cardsPerPage = getCardsPerPage();
-        const cardWidth = 340 + 32;
-        const pageWidth = cardsPerPage * cardWidth;
-        const targetScroll = (currentPage + 1) * pageWidth;
-
-        autoScrollTween = gsap.to(slider, {
-          scrollLeft: targetScroll,
-          duration: 1.2,
-          ease: 'power2.inOut',
-          onComplete: () => {
-            updateActiveDot();
-            setTimeout(() => startAutoScroll(), 2500);
-          },
-        });
-      }
-    }
-
-    // 当组件进入视口时，重置到第一个产品
-    ScrollTrigger.create({
-      trigger: '.popular-products',
-      start: 'top 80%',
-      once: true,
-      onEnter: () => {
-        // 确保滚动位置在开头
-        slider.scrollLeft = 0;
-        updateActiveDot();
-        // 3秒后开始自动滚动
-        setTimeout(() => {
-          if (!isHovering && !isManualScrolling) {
-            startAutoScroll();
-          }
-        }, 3000);
-      },
-    });
-
     // 初始化 dot 状态
     updateActiveDot();
-
-    slider.addEventListener('mouseenter', () => {
-      isHovering = true;
-      if (autoScrollTween) autoScrollTween.kill();
-    });
-
-    slider.addEventListener('mouseleave', () => {
-      isHovering = false;
-      if (!isManualScrolling) {
-        setTimeout(() => startAutoScroll(), 2000);
-      }
-    });
 
     // 手动滚动检测
     slider.addEventListener('scroll', () => {
       updateActiveDot();
-
-      // 检测是否是用户手动滚动（非GSAP动画滚动）
-      if (!autoScrollTween || !autoScrollTween.isActive()) {
-        isManualScrolling = true;
-        if (autoScrollTween) autoScrollTween.kill();
-
-        if (scrollTimer) clearTimeout(scrollTimer);
-        scrollTimer = window.setTimeout(() => {
-          isManualScrolling = false;
-          if (!isHovering) {
-            setTimeout(() => startAutoScroll(), 2000);
-          }
-        }, 3000);
-      }
+      updateButtons();
     });
 
     // 手动导航按钮
     prevBtn.addEventListener('click', () => {
       const currentPage = getCurrentPage();
       if (currentPage > 0) {
-        scrollToPage(currentPage - 1, 0.7);
+        scrollToPage(currentPage - 1);
       }
     });
 
@@ -606,7 +332,7 @@ const products: Product[] = await Promise.all(
       const currentPage = getCurrentPage();
       const totalPages = getTotalPages();
       if (currentPage < totalPages - 1) {
-        scrollToPage(currentPage + 1, 0.7);
+        scrollToPage(currentPage + 1);
       }
     });
 
@@ -616,39 +342,23 @@ const products: Product[] = await Promise.all(
       const totalPages = getTotalPages();
 
       // 更新前一个按钮
-      gsap.to(prevBtn, {
-        opacity: currentPage <= 0 ? 0.3 : 1,
-        pointerEvents: currentPage <= 0 ? 'none' : 'auto',
-        duration: 0.3,
-      });
+      if (currentPage <= 0) {
+        prevBtn.style.opacity = '0.3';
+        prevBtn.style.pointerEvents = 'none';
+      } else {
+        prevBtn.style.opacity = '1';
+        prevBtn.style.pointerEvents = 'auto';
+      }
 
       // 更新下一个按钮
-      gsap.to(nextBtn, {
-        opacity: currentPage >= totalPages - 1 ? 0.3 : 1,
-        pointerEvents: currentPage >= totalPages - 1 ? 'none' : 'auto',
-        duration: 0.3,
-      });
-    }
-
-    // 手动滚动检测
-    slider.addEventListener('scroll', () => {
-      updateActiveDot();
-      updateButtons();
-
-      // 检测是否是用户手动滚动（非GSAP动画滚动）
-      if (!autoScrollTween || !autoScrollTween.isActive()) {
-        isManualScrolling = true;
-        if (autoScrollTween) autoScrollTween.kill();
-
-        if (scrollTimer) clearTimeout(scrollTimer);
-        scrollTimer = window.setTimeout(() => {
-          isManualScrolling = false;
-          if (!isHovering) {
-            setTimeout(() => startAutoScroll(), 2000);
-          }
-        }, 3000);
+      if (currentPage >= totalPages - 1) {
+        nextBtn.style.opacity = '0.3';
+        nextBtn.style.pointerEvents = 'none';
+      } else {
+        nextBtn.style.opacity = '1';
+        nextBtn.style.pointerEvents = 'auto';
       }
-    });
+    }
 
     // 初始化
     updateButtons();
