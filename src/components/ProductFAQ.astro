@@ -19,27 +19,22 @@ if (!faqs || faqs.length === 0) {
 
 <section class="faq-section">
   <div class="faq-container">
-    <!-- 左侧图片 -->
-    {image && (
-      <div class="faq-image" data-faq="image">
-        <img src={image} alt="Product FAQ" />
-      </div>
-    )}
-
-    <!-- 右侧 FAQ 内容 -->
+    <!-- FAQ 内容 - 全宽居中 -->
     <div class="faq-content">
-      <p class="faq-badge" data-faq="badge">FAQ's</p>
-      <h2 class="faq-title" data-faq="title">Looking for answer?</h2>
-      <p class="faq-description" data-faq="desc">
-        Find answers to commonly asked questions about this product.
-      </p>
+      <div class="faq-header">
+        <p class="faq-badge" data-faq="badge">FAQ's</p>
+        <h2 class="faq-title" data-faq="title">Frequently Asked Questions</h2>
+        <p class="faq-description" data-faq="desc">
+          Find answers to commonly asked questions about this product.
+        </p>
+      </div>
 
       <div class="faq-list">
         {faqs.map((faq, index) => (
           <div class="faq-item" data-faq-item={index}>
             <button class="faq-question" data-faq-toggle>
               <h3>{faq.question}</h3>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" class="faq-icon">
+              <svg width="20" height="20" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" class="faq-icon">
                 <path d="m4.5 7.2 3.793 3.793a1 1 0 0 0 1.414 0L13.5 7.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </button>
@@ -54,21 +49,19 @@ if (!faqs || faqs.length === 0) {
 </section>
 
 <script>
-  import { gsap } from '../lib/gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  // FAQ 展开/收起动画
+  // FAQ 展开/收起（使用原生 JavaScript，不依赖 GSAP）
   const faqItems = document.querySelectorAll('.faq-item');
 
   faqItems.forEach((item) => {
     const toggle = item.querySelector('[data-faq-toggle]');
     const answer = item.querySelector('.faq-answer');
-    const icon = item.querySelector('.faq-icon');
 
-    if (!toggle || !answer || !icon) return;
+    if (!toggle || !answer) return;
 
     // 初始状态：收起
-    gsap.set(answer, { height: 0, opacity: 0 });
+    answer.style.height = '0';
+    answer.style.opacity = '0';
+    answer.style.transition = 'height 0.3s ease, opacity 0.3s ease';
 
     toggle.addEventListener('click', () => {
       const isOpen = item.classList.contains('open');
@@ -76,177 +69,108 @@ if (!faqs || faqs.length === 0) {
       if (isOpen) {
         // 收起
         item.classList.remove('open');
-        gsap.to(answer, {
-          height: 0,
-          opacity: 0,
-          duration: 0.5,
-          ease: 'power2.inOut',
-        });
-        gsap.to(icon, {
-          rotation: 0,
-          duration: 0.5,
-          ease: 'power2.inOut',
-        });
+        answer.style.height = '0';
+        answer.style.opacity = '0';
       } else {
-        // 展开
+        // 收起其他已展开的项
+        faqItems.forEach((otherItem) => {
+          if (otherItem !== item && otherItem.classList.contains('open')) {
+            otherItem.classList.remove('open');
+            const otherAnswer = otherItem.querySelector('.faq-answer');
+            if (otherAnswer) {
+              otherAnswer.style.height = '0';
+              otherAnswer.style.opacity = '0';
+            }
+          }
+        });
+
+        // 展开当前项
         item.classList.add('open');
-        gsap.to(answer, {
-          height: 'auto',
-          opacity: 1,
-          duration: 0.5,
-          ease: 'power2.inOut',
-        });
-        gsap.to(icon, {
-          rotation: 180,
-          duration: 0.5,
-          ease: 'power2.inOut',
-        });
+        const scrollHeight = answer.scrollHeight;
+        answer.style.height = scrollHeight + 'px';
+        answer.style.opacity = '1';
       }
     });
   });
-
-  // 入场动画
-  gsap.from('[data-faq="badge"]', {
-    scrollTrigger: {
-      trigger: '.faq-section',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
-    },
-    y: 20,
-    opacity: 0,
-    duration: 0.6,
-  });
-
-  gsap.from('[data-faq="title"]', {
-    scrollTrigger: {
-      trigger: '.faq-section',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
-    },
-    y: 30,
-    opacity: 0,
-    duration: 0.8,
-    delay: 0.1,
-  });
-
-  gsap.from('[data-faq="desc"]', {
-    scrollTrigger: {
-      trigger: '.faq-section',
-      start: 'top 80%',
-      toggleActions: 'play none none reverse',
-    },
-    y: 20,
-    opacity: 0,
-    duration: 0.6,
-    delay: 0.2,
-  });
-
-  // FAQ 项逐个出现
-  faqItems.forEach((item, index) => {
-    gsap.from(item, {
-      scrollTrigger: {
-        trigger: item,
-        start: 'top 90%',
-        toggleActions: 'play none none reverse',
-      },
-      y: 30,
-      opacity: 0,
-      duration: 0.6,
-      delay: index * 0.1,
-    });
-  });
-
-  // 图片动画
-  if (document.querySelector('[data-faq="image"]')) {
-    gsap.from('[data-faq="image"]', {
-      scrollTrigger: {
-        trigger: '.faq-section',
-        start: 'top 80%',
-        toggleActions: 'play none none reverse',
-      },
-      scale: 0.95,
-      opacity: 0,
-      duration: 1,
-      ease: 'power2.out',
-    });
-  }
 </script>
 
 <style>
   .faq-section {
-    background: #fff;
-    padding: 6rem 0;
+    background: #f9fafb;
+    padding: 5rem 0;
   }
 
   .faq-container {
-    max-width: 1800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--spacing-xl);
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 4rem;
-    align-items: start;
   }
 
-  /* 左侧图片 */
-  .faq-image {
-    position: sticky;
-    top: 100px;
-    width: 100%;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  }
-
-  .faq-image img {
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
-  }
-
-  /* 右侧内容 */
+  /* FAQ 内容 */
   .faq-content {
     width: 100%;
   }
 
+  .faq-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .faq-badge {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #6366f1;
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #d4af37;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.75rem;
+    letter-spacing: 0.1em;
+    background: rgba(212, 175, 55, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
   }
 
   .faq-title {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 800;
     color: #000;
     margin-bottom: 1rem;
     line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
   }
 
   .faq-description {
-    font-size: 0.95rem;
-    color: #64748b;
+    font-size: 1rem;
+    color: #666;
     line-height: 1.6;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
   }
 
   /* FAQ 列表 */
   .faq-list {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
   }
 
   .faq-item {
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1.25rem 0;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s;
   }
 
-  .faq-item:last-child {
-    border-bottom: none;
+  .faq-item:hover {
+    border-color: #d4af37;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .faq-item.open {
+    border-color: #d4af37;
   }
 
   .faq-question {
@@ -256,88 +180,115 @@ if (!faqs || faqs.length === 0) {
     justify-content: space-between;
     background: none;
     border: none;
-    padding: 0;
+    padding: 1.5rem;
     cursor: pointer;
     text-align: left;
-    transition: opacity 0.3s;
+    transition: background 0.3s;
   }
 
   .faq-question:hover {
-    opacity: 0.7;
+    background: #fafafa;
   }
 
   .faq-question h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #000;
     margin: 0;
-    padding-right: 1rem;
+    padding-right: 1.5rem;
+    flex: 1;
+    text-transform: none;
+    letter-spacing: normal;
   }
 
   .faq-icon {
     flex-shrink: 0;
-    color: #1e293b;
-    transition: transform 0.5s ease;
+    color: #d4af37;
+    transition: transform 0.3s ease;
+  }
+
+  .faq-item.open .faq-icon {
+    transform: rotate(180deg);
   }
 
   .faq-answer {
     overflow: hidden;
+    border-top: 1px solid #f0f0f0;
   }
 
   .faq-answer p {
-    font-size: 0.9rem;
-    color: #64748b;
+    font-size: 0.95rem;
+    color: #666;
     line-height: 1.7;
     margin: 0;
-    padding-top: 1rem;
-    max-width: 600px;
+    padding: 1.5rem;
   }
 
   /* 响应式 */
-  @media (max-width: 1024px) {
-    .faq-container {
-      grid-template-columns: 1fr;
-      gap: 3rem;
-    }
-
-    .faq-image {
-      position: relative;
-      top: 0;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-  }
-
   @media (max-width: 768px) {
     .faq-section {
-      padding: 4rem 0;
+      padding: 3.5rem 0;
     }
 
     .faq-container {
-      padding: 0 1.5rem;
-      gap: 2rem;
+      padding: 0 1rem;
+    }
+
+    .faq-header {
+      margin-bottom: 2rem;
+    }
+
+    .faq-badge {
+      font-size: 0.65rem;
+      padding: 0.4rem 0.85rem;
     }
 
     .faq-title {
-      font-size: 1.75rem;
+      font-size: clamp(1.5rem, 6vw, 2rem);
+      margin-bottom: 0.75rem;
     }
 
     .faq-description {
-      font-size: 0.875rem;
-      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
     }
 
-    .faq-item {
-      padding: 1rem 0;
+    .faq-list {
+      gap: 0.75rem;
+    }
+
+    .faq-question {
+      padding: 1.25rem;
     }
 
     .faq-question h3 {
       font-size: 0.95rem;
+      padding-right: 1rem;
+    }
+
+    .faq-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    .faq-answer p {
+      font-size: 0.875rem;
+      padding: 1.25rem;
+      line-height: 1.6;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .faq-question {
+      padding: 1rem;
+    }
+
+    .faq-question h3 {
+      font-size: 0.9rem;
     }
 
     .faq-answer p {
       font-size: 0.85rem;
-      padding-top: 0.75rem;
+      padding: 1rem;
     }
   }
 </style>
