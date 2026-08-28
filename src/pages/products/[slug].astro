@@ -224,6 +224,8 @@ let specifications: SpecificationRow[] = [];
 let specificationImage = '';
 let model3dUrl = '';
 let proxyModelUrl = '';
+let model3dUrl2 = '';
+let proxyModelUrl2 = '';
 let faqs: Array<{ question: string; answer: string }> = [];
 let faqImage = '';
 
@@ -236,6 +238,9 @@ try {
   specificationImage = getMetaValue('specification_image') || '';
   model3dUrl = getMetaValue('model_3d_url') || '';
 
+  // 读取第二个 3D 模型 URL
+  model3dUrl2 = getMetaValue('model_3d_url_2') || '';
+
   // 读取 FAQ 数据
   const faqsJson = getMetaValue('faqs');
   if (faqsJson) {
@@ -247,6 +252,9 @@ try {
   // 如果有 3D 模型 URL，通过代理使用（解决 CORS 问题）
   if (model3dUrl) {
     proxyModelUrl = `/api/proxy-model?url=${encodeURIComponent(model3dUrl)}`;
+  }
+  if (model3dUrl2) {
+    proxyModelUrl2 = `/api/proxy-model?url=${encodeURIComponent(model3dUrl2)}`;
   }
 } catch (e) {
   console.error('Failed to parse specifications or faqs:', e);
@@ -889,6 +897,8 @@ if (specifications.length === 0) {
                 tone-mapping="commerce"
                 loading="eager"
                 reveal="auto"
+                data-model-url-1={proxyModelUrl}
+                data-model-url-2={proxyModelUrl2}
                 style="width: 100%; height: 100%; --poster-color: transparent;"
               >
                 <div class="viewer-loading" slot="poster" id="model-poster">
@@ -899,6 +909,15 @@ if (specifications.length === 0) {
                   </div>
                 </div>
               </model-viewer>
+
+              {/* 如果有第二个模型，显示切换按钮 */}
+              {proxyModelUrl2 && (
+                <div class="model-switch-buttons">
+                  <button class="model-switch-btn active" data-model-index="1">Model 1</button>
+                  <button class="model-switch-btn" data-model-index="2">Model 2</button>
+                </div>
+              )}
+
               <div class="viewer-controls" id="viewer-controls-hint">
                 <div class="control-info">
                   <span>Drag to rotate • Scroll to zoom • Double-click to reset</span>
@@ -3104,6 +3123,38 @@ if (specifications.length === 0) {
         modelViewer.addEventListener('camera-change', hideHint, { once: true });
       }
     }
+
+    // 3D 模型切换按钮功能
+    const switchButtons = document.querySelectorAll('.model-switch-btn');
+    if (switchButtons.length > 0 && modelViewer) {
+      const modelUrl1 = modelViewer.getAttribute('data-model-url-1');
+      const modelUrl2 = modelViewer.getAttribute('data-model-url-2');
+
+      switchButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const modelIndex = button.getAttribute('data-model-index');
+
+          // 更新按钮状态
+          switchButtons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+
+          // 切换模型
+          if (modelIndex === '1' && modelUrl1) {
+            modelViewer.src = modelUrl1;
+            console.log('Switched to Model 1');
+          } else if (modelIndex === '2' && modelUrl2) {
+            modelViewer.src = modelUrl2;
+            console.log('Switched to Model 2');
+          }
+
+          // 显示加载状态
+          const poster = document.getElementById('model-poster');
+          if (poster) poster.style.display = 'flex';
+          if (loadingText) loadingText.textContent = 'Loading 3D Model...';
+          if (loadingProgress) loadingProgress.textContent = '';
+        });
+      });
+    }
   });
 
   // ==================== Load More Reviews ====================
@@ -3171,9 +3222,98 @@ if (specifications.length === 0) {
       }
     });
   }
+
+  // ==================== 图片加载占位符处理 ====================
+  function initImageLoading() {
+    // 选择需要添加加载效果的图片容器（排除 3D viewer）
+    const imageContainers = [
+      ...document.querySelectorAll('.feature-card-image, .gallery-slide-link, .product-image-wrapper'),
+      // 单独处理 specification-image，确保不是 3D viewer
+      ...Array.from(document.querySelectorAll('.specification-image')).filter(el =>
+        !el.closest('.specification-3d-viewer')
+      )
+    ];
+
+    imageContainers.forEach(container => {
+      // 添加加载类
+      container.classList.add('image-loading');
+
+      const img = container.querySelector('img');
+      if (img) {
+        // 如果图片已经加载完成
+        if (img.complete && img.naturalHeight !== 0) {
+          container.classList.add('loaded');
+        } else {
+          // 监听图片加载完成
+          img.addEventListener('load', () => {
+            container.classList.add('loaded');
+          });
+
+          // 监听图片加载失败
+          img.addEventListener('error', () => {
+            container.classList.add('loaded');
+            console.warn('Image failed to load:', img.src);
+          });
+        }
+      }
+    });
+  }
+
+  // 初始化图片加载
+  initImageLoading();
+
+  // 观察动态添加的图片（比如 lightbox）
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) {
+          const images = node.querySelectorAll?.('.feature-card-image, .gallery-slide-link');
+          if (images && images.length > 0) {
+            initImageLoading();
+          }
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
 </script>
 
 <style>
+  /* ==================== 图片加载占位符和骨架屏 ==================== */
+  .image-loading {
+    position: relative;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .image-loading img {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .image-loading.loaded {
+    background: transparent;
+    animation: none;
+  }
+
+  .image-loading.loaded img {
+    opacity: 1;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
   /* ==================== Header Override for Product Page ==================== */
   :global(.header) {
     background: #000 !important;
@@ -5007,6 +5147,42 @@ if (specifications.length === 0) {
     color: rgba(255, 255, 255, 0.8);
   }
 
+  /* 3D 模型切换按钮 */
+  .model-switch-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+  }
+
+  .model-switch-btn {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #e5e5e5;
+    color: #666;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s;
+  }
+
+  .model-switch-btn:hover {
+    background: #fff;
+    border-color: #d4af37;
+    color: #000;
+  }
+
+  .model-switch-btn.active {
+    background: #d4af37;
+    border-color: #d4af37;
+    color: #fff;
+  }
+
   .viewer-loading {
     position: absolute;
     inset: 0;
@@ -6142,6 +6318,17 @@ if (specifications.length === 0) {
     .specification-3d-viewer {
       height: 400px;
       order: 1;
+    }
+
+    .model-switch-buttons {
+      top: 10px;
+      right: 10px;
+      gap: 0.25rem;
+    }
+
+    .model-switch-btn {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.65rem;
     }
 
     .viewer-controls {
