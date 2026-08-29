@@ -260,35 +260,39 @@ try {
   console.error('Failed to parse specifications or faqs:', e);
 }
 
-// 如果没有自定义 FAQ，使用默认假数据
+// 如果没有自定义 FAQ，使用默认数据
 if (faqs.length === 0) {
   faqs = [
     {
-      question: "What is the load capacity of this product?",
-      answer: "This hand truck can handle up to 500 kg (1100 lbs) of weight safely and efficiently, making it suitable for heavy-duty applications."
+      question: "How easy is it to fold and store? What are the folded dimensions?",
+      answer: "It folds flat in just a few seconds with a simple one-touch mechanism. Once folded, it becomes super compact and can easily slide under a bed, fit into a car trunk, or slip into tight closet spaces."
     },
     {
-      question: "Is it suitable for outdoor use?",
-      answer: "Yes, it features weather-resistant materials and durable wheels designed for various terrains including concrete, asphalt, and uneven surfaces."
+      question: "Does this product require assembly upon opening the box?",
+      answer: "No complicated installation required! It comes ready to use right out of the box—just unfold the nose plate and extend the handle to start moving immediately."
     },
     {
-      question: "Does it come assembled?",
-      answer: "The product comes partially assembled. Final assembly takes approximately 10-15 minutes with the included tools and instruction manual."
+      question: "Will the wheels scratch indoor wooden floors or make loud noise outdoors?",
+      answer: "No. Equipped with premium, wear-resistant TPR/PU quiet wheels, it ensures smooth and whisper-quiet rolling on both indoor hardwood floors and rough outdoor surfaces like concrete or asphalt without leaving marks."
     },
     {
-      question: "What is the warranty period?",
-      answer: "We offer a comprehensive 2-year manufacturer warranty covering defects in materials and workmanship. Extended warranty options are also available."
+      question: "Do these products come with bungee cords or elastic straps?",
+      answer: "Yes! Most of our folding hand trucks come equipped with strong elastic bungee straps to securely anchor your boxes or cargo during transport, preventing tipping or slipping."
     },
     {
-      question: "Can I use it on stairs?",
-      answer: "Yes, this model is designed with stair-climbing capabilities. The ergonomic handle and balanced design make it easier to navigate stairs safely."
+      question: "How long does shipping take?",
+      answer: "Orders are processed within 24 hours. Fast nationwide delivery typically arrives within 3-7 business days directly from our local US warehouse."
+    },
+    {
+      question: "What is your warranty policy if a part breaks or if I'm not satisfied?",
+      answer: "We stand behind our quality with a 30-day risk-free return policy and structural warranty. If you encounter any performance or quality issues, contact our support team for a hassle-free replacement or assistance."
     }
   ];
+}
 
-  // 如果没有 FAQ 图片，使用产品主图
-  if (!faqImage && product.images && product.images.length > 0) {
-    faqImage = product.images[0].src;
-  }
+// 如果没有 FAQ 图片，使用产品主图
+if (!faqImage && product.images && product.images.length > 0) {
+  faqImage = product.images[0].src;
 }
 
 // 如果没有自定义规格，使用默认的假数据
@@ -644,6 +648,19 @@ if (specifications.length === 0) {
             <div class="info-icon-text">
               <strong>Warranty</strong>
               <span>2 year manufacturer warranty</span>
+            </div>
+          </div>
+
+          <div class="info-icon-item payment-icon-item">
+            <div class="payment-icon-content">
+              <strong>Secure Payment</strong>
+              <div class="payment-icons-group">
+                <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/cards/visa-alt.svg" alt="Visa" />
+                <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/cards/mastercard-alt.svg" alt="Mastercard" />
+                <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/cards/american-express.svg" alt="American Express" />
+                <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/cards/jcb.svg" alt="JCB" />
+                <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/apm/paypal.svg" alt="PayPal" />
+              </div>
             </div>
           </div>
         </div>
@@ -4321,6 +4338,35 @@ if (specifications.length === 0) {
   .info-icon-text span {
     font-size: 0.75rem;
     color: #666;
+  }
+
+  .payment-icon-item {
+    display: block !important;
+  }
+
+  .payment-icon-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .payment-icon-content strong {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #000;
+  }
+
+  .payment-icons-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .payment-icons-group img {
+    height: 20px;
+    width: auto;
+    object-fit: contain;
   }
 
   /* ==================== Product Actions ==================== */

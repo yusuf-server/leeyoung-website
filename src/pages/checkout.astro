@@ -54,10 +54,8 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
               <div class="form-group">
                 <select id="country" class="form-input" required>
                   <option value="">Country/Region</option>
-                  <option value="US">United States</option>
+                  <option value="US" selected>United States</option>
                   <option value="CA">Canada</option>
-                  <option value="GB">United Kingdom</option>
-                  <option value="AU">Australia</option>
                 </select>
               </div>
             </div>
@@ -116,7 +114,6 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
                 <select id="state" class="form-input" required>
                   <option value="">State</option>
                   <option value="AL">Alabama</option>
-                  <option value="AK">Alaska</option>
                   <option value="AZ">Arizona</option>
                   <option value="AR">Arkansas</option>
                   <option value="CA">California</option>
@@ -125,7 +122,6 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
                   <option value="DE">Delaware</option>
                   <option value="FL">Florida</option>
                   <option value="GA">Georgia</option>
-                  <option value="HI">Hawaii</option>
                   <option value="ID">Idaho</option>
                   <option value="IL">Illinois</option>
                   <option value="IN">Indiana</option>
@@ -198,21 +194,12 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
                   <input type="radio" name="shipping" value="standard" checked />
                   <span class="shipping-info">
                     <span class="shipping-name">Standard Shipping</span>
-                    <span class="shipping-time">5-7 business days</span>
+                    <span class="shipping-time">1-3 business days</span>
                   </span>
                   <span class="shipping-price">Free</span>
                 </label>
               </div>
-              <div class="shipping-option">
-                <label class="shipping-label">
-                  <input type="radio" name="shipping" value="express" />
-                  <span class="shipping-info">
-                    <span class="shipping-name">Express Shipping</span>
-                    <span class="shipping-time">2-3 business days</span>
-                  </span>
-                  <span class="shipping-price">$15.00</span>
-                </label>
-              </div>
+             
             </div>
           </div>
 
@@ -230,7 +217,15 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
                   <label class="payment-label">
                     <input type="radio" name="payment" value="stripe" checked={hasStripe} />
                     <span class="payment-info">
-                      <span class="payment-name">💳 Credit Card</span>
+                      <span class="payment-name">
+                        <span class="payment-name-text">Credit Card</span>
+                        <span class="payment-icons">
+                          <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/cards/visa-alt.svg" alt="Visa" />
+                          <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/cards/mastercard-alt.svg" alt="Mastercard" />
+                          <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/cards/american-express.svg" alt="Amex" />
+                          <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/cards/jcb.svg" alt="JCB" />
+                        </span>
+                      </span>
                       <span class="payment-description">Pay securely with your credit card</span>
                     </span>
                   </label>
@@ -249,7 +244,12 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
                   <label class="payment-label">
                     <input type="radio" name="payment" value="paypal" checked={!hasStripe && hasPayPal} />
                     <span class="payment-info">
-                      <span class="payment-name">🅿️ PayPal</span>
+                      <span class="payment-name">
+                        <span class="payment-name-text">PayPal</span>
+                        <span class="payment-icons">
+                          <img src="https://raw.githubusercontent.com/datatrans/payment-logos/f36c35ea967ec768aec64c9e69ab4b4f2f0b3549/assets/apm/paypal.svg" alt="PayPal" />
+                        </span>
+                      </span>
                       <span class="payment-description">Pay securely with your PayPal account</span>
                     </span>
                   </label>
@@ -295,6 +295,14 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
               <div class="summary-row">
                 <span>Subtotal</span>
                 <span data-summary="subtotal">$0.00</span>
+              </div>
+              <div class="summary-row" id="discount-row" style="display: none;">
+                <span>
+                  Discount
+                  <span id="discount-code-label"></span>
+                  <button type="button" id="remove-discount-btn" class="remove-discount-btn">✕</button>
+                </span>
+                <span data-summary="discount">$0.00</span>
               </div>
               <div class="summary-row">
                 <span>Shipping</span>
@@ -342,6 +350,7 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
   let cart: Cart | null = null;
   let isLoading = true;
   let selectedPaymentMethod: string = hasStripe ? 'stripe' : 'paypal';
+  let appliedCoupon: any = null;
 
   // Initialize Stripe
   async function initStripe() {
@@ -430,7 +439,13 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ billing, shipping, shippingMethod, line_items: lineItems }),
+          body: JSON.stringify({
+            billing,
+            shipping,
+            shippingMethod,
+            line_items: lineItems,
+            coupon_lines: appliedCoupon ? [{ code: appliedCoupon.code }] : []
+          }),
         });
 
         if (!response.ok) {
@@ -578,8 +593,91 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
     }
 
     // Update totals using localStorage cart data
-    document.querySelector('[data-summary="subtotal"]')!.textContent = CartManager.formatPrice(cart.subtotal);
-    document.querySelector('[data-summary="total"] .amount')!.textContent = CartManager.formatPrice(cart.total);
+    const subtotal = appliedCoupon ? cart.subtotal : cart.subtotal;
+    const discount = appliedCoupon ? appliedCoupon.discount_amount : 0;
+    const total = appliedCoupon ? (cart.total - discount) : cart.total;
+
+    document.querySelector('[data-summary="subtotal"]')!.textContent = CartManager.formatPrice(subtotal);
+
+    if (appliedCoupon) {
+      document.getElementById('discount-row')!.style.display = 'flex';
+      document.getElementById('discount-code-label')!.textContent = `(${appliedCoupon.code})`;
+      document.querySelector('[data-summary="discount"]')!.textContent = '-' + CartManager.formatPrice(discount);
+    } else {
+      document.getElementById('discount-row')!.style.display = 'none';
+    }
+
+    document.querySelector('[data-summary="total"] .amount')!.textContent = CartManager.formatPrice(total);
+  }
+
+  // Apply coupon code
+  async function applyCoupon() {
+    const promoInput = document.getElementById('promoCode') as HTMLInputElement;
+    const promoBtn = document.querySelector('.promo-btn') as HTMLButtonElement;
+    const couponCode = promoInput.value.trim();
+
+    if (!couponCode) {
+      showWarning('Please enter a discount code', 'Discount Code Required');
+      return;
+    }
+
+    if (!cart) {
+      showError('Cart is empty');
+      return;
+    }
+
+    // Disable button during request
+    promoBtn.disabled = true;
+    promoBtn.textContent = 'Applying...';
+
+    try {
+      const response = await fetch('/api/cart/apply-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          coupon_code: couponCode,
+          cart_items: cart.items.map(item => ({
+            product_id: item.product_id,
+            quantity: item.quantity,
+            variation_id: item.variation_id || 0
+          }))
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to apply coupon');
+      }
+
+      appliedCoupon = {
+        code: couponCode,
+        discount_amount: data.discount_amount
+      };
+
+      showInfo(`Discount code "${couponCode}" applied successfully!`, 'Discount Applied');
+      promoInput.value = '';
+      promoInput.disabled = true;
+      renderOrderSummary();
+
+    } catch (error: any) {
+      console.error('Failed to apply coupon:', error);
+      showError(error.message || 'Invalid or expired discount code');
+    } finally {
+      promoBtn.disabled = false;
+      promoBtn.textContent = 'Apply';
+    }
+  }
+
+  // Remove coupon code
+  function removeCoupon() {
+    appliedCoupon = null;
+    const promoInput = document.getElementById('promoCode') as HTMLInputElement;
+    promoInput.disabled = false;
+    promoInput.value = '';
+    renderOrderSummary();
+    showInfo('Discount code removed', 'Discount Removed');
   }
 
   // Validate form
@@ -637,7 +735,13 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ billing, shipping, shippingMethod, line_items: lineItems }),
+        body: JSON.stringify({
+          billing,
+          shipping,
+          shippingMethod,
+          line_items: lineItems,
+          coupon_lines: appliedCoupon ? [{ code: appliedCoupon.code }] : []
+        }),
       });
 
       if (!intentResponse.ok) {
@@ -772,6 +876,103 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
     }
   }
 
+  // Handle country change to update state/province options
+  function handleCountryChange() {
+    const countrySelect = document.getElementById('country') as HTMLSelectElement;
+    const stateSelect = document.getElementById('state') as HTMLSelectElement;
+    const postalCodeInput = document.getElementById('postalCode') as HTMLInputElement;
+
+    if (!countrySelect || !stateSelect) return;
+
+    const country = countrySelect.value;
+
+    // US States (excluding Alaska and Hawaii)
+    const usStates = [
+      { value: 'AL', name: 'Alabama' },
+      { value: 'AZ', name: 'Arizona' },
+      { value: 'AR', name: 'Arkansas' },
+      { value: 'CA', name: 'California' },
+      { value: 'CO', name: 'Colorado' },
+      { value: 'CT', name: 'Connecticut' },
+      { value: 'DE', name: 'Delaware' },
+      { value: 'FL', name: 'Florida' },
+      { value: 'GA', name: 'Georgia' },
+      { value: 'ID', name: 'Idaho' },
+      { value: 'IL', name: 'Illinois' },
+      { value: 'IN', name: 'Indiana' },
+      { value: 'IA', name: 'Iowa' },
+      { value: 'KS', name: 'Kansas' },
+      { value: 'KY', name: 'Kentucky' },
+      { value: 'LA', name: 'Louisiana' },
+      { value: 'ME', name: 'Maine' },
+      { value: 'MD', name: 'Maryland' },
+      { value: 'MA', name: 'Massachusetts' },
+      { value: 'MI', name: 'Michigan' },
+      { value: 'MN', name: 'Minnesota' },
+      { value: 'MS', name: 'Mississippi' },
+      { value: 'MO', name: 'Missouri' },
+      { value: 'MT', name: 'Montana' },
+      { value: 'NE', name: 'Nebraska' },
+      { value: 'NV', name: 'Nevada' },
+      { value: 'NH', name: 'New Hampshire' },
+      { value: 'NJ', name: 'New Jersey' },
+      { value: 'NM', name: 'New Mexico' },
+      { value: 'NY', name: 'New York' },
+      { value: 'NC', name: 'North Carolina' },
+      { value: 'ND', name: 'North Dakota' },
+      { value: 'OH', name: 'Ohio' },
+      { value: 'OK', name: 'Oklahoma' },
+      { value: 'OR', name: 'Oregon' },
+      { value: 'PA', name: 'Pennsylvania' },
+      { value: 'RI', name: 'Rhode Island' },
+      { value: 'SC', name: 'South Carolina' },
+      { value: 'SD', name: 'South Dakota' },
+      { value: 'TN', name: 'Tennessee' },
+      { value: 'TX', name: 'Texas' },
+      { value: 'UT', name: 'Utah' },
+      { value: 'VT', name: 'Vermont' },
+      { value: 'VA', name: 'Virginia' },
+      { value: 'WA', name: 'Washington' },
+      { value: 'WV', name: 'West Virginia' },
+      { value: 'WI', name: 'Wisconsin' },
+      { value: 'WY', name: 'Wyoming' }
+    ];
+
+    // Canadian Provinces
+    const caProvinces = [
+      { value: 'AB', name: 'Alberta' },
+      { value: 'BC', name: 'British Columbia' },
+      { value: 'MB', name: 'Manitoba' },
+      { value: 'NB', name: 'New Brunswick' },
+      { value: 'NL', name: 'Newfoundland and Labrador' },
+      { value: 'NT', name: 'Northwest Territories' },
+      { value: 'NS', name: 'Nova Scotia' },
+      { value: 'NU', name: 'Nunavut' },
+      { value: 'ON', name: 'Ontario' },
+      { value: 'PE', name: 'Prince Edward Island' },
+      { value: 'QC', name: 'Quebec' },
+      { value: 'SK', name: 'Saskatchewan' },
+      { value: 'YT', name: 'Yukon' }
+    ];
+
+    // Update state/province options based on country
+    let options = '<option value="">State/Province</option>';
+
+    if (country === 'US') {
+      usStates.forEach(state => {
+        options += `<option value="${state.value}">${state.name}</option>`;
+      });
+      postalCodeInput.placeholder = 'ZIP code';
+    } else if (country === 'CA') {
+      caProvinces.forEach(province => {
+        options += `<option value="${province.value}">${province.name}</option>`;
+      });
+      postalCodeInput.placeholder = 'Postal code';
+    }
+
+    stateSelect.innerHTML = options;
+  }
+
   // Event listeners
   document.getElementById('completeOrderBtn')?.addEventListener('click', submitOrder);
 
@@ -779,6 +980,19 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
   document.querySelectorAll('input[name="payment"]').forEach(radio => {
     radio.addEventListener('change', handlePaymentMethodChange);
   });
+
+  // Country change listener
+  document.getElementById('country')?.addEventListener('change', handleCountryChange);
+
+  // Promo code listeners
+  document.querySelector('.promo-btn')?.addEventListener('click', applyCoupon);
+  document.getElementById('promoCode')?.addEventListener('keypress', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyCoupon();
+    }
+  });
+  document.getElementById('remove-discount-btn')?.addEventListener('click', removeCoupon);
 
   // Initialize
   if (hasStripe) {
@@ -789,6 +1003,7 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
   }
   loadCart();
   handlePaymentMethodChange(); // Set initial state
+  handleCountryChange(); // Set initial state/province options
 
   // Entrance animations
   gsap.from('.checkout-forms', {
@@ -1037,6 +1252,25 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
   .payment-name {
     font-weight: 600;
     font-size: 0.9375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .payment-name-text {
+    flex-shrink: 0;
+  }
+
+  .payment-icons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .payment-icons img {
+    height: 24px;
+    width: auto;
+    object-fit: contain;
   }
 
   .payment-description {
@@ -1290,6 +1524,11 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
     background: #e5e7eb;
   }
 
+  .promo-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
   /* Summary Totals */
   .summary-totals {
     display: flex;
@@ -1300,7 +1539,32 @@ const hasPayPal = enabledPaymentMethods.some(m => m.id === 'paypal');
   .summary-row {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 0.875rem;
+  }
+
+  #discount-row {
+    color: #16a34a;
+  }
+
+  #discount-code-label {
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+  }
+
+  .remove-discount-btn {
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 0.25rem;
+    margin-left: 0.5rem;
+    transition: color 0.2s;
+  }
+
+  .remove-discount-btn:hover {
+    color: #dc2626;
   }
 
   .summary-total {

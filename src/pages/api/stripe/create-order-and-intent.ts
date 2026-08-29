@@ -42,6 +42,9 @@ interface RequestBody {
     variation_id?: number;
     quantity: number;
   }>;
+  coupon_lines?: Array<{
+    code: string;
+  }>;
 }
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
@@ -65,7 +68,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     const stripe = createStripeClient(env);
 
     // 3. 解析请求体
-    const { billing, shipping, shippingMethod = 'standard', line_items } = await request.json() as RequestBody;
+    const { billing, shipping, shippingMethod = 'standard', line_items, coupon_lines = [] } = await request.json() as RequestBody;
 
     // 4. 验证必需字段
     if (!billing.email || !billing.first_name || !billing.last_name) {
@@ -299,6 +302,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       },
       line_items: lineItems,
       shipping_lines: shippingLines,
+      coupon_lines: coupon_lines,
       meta_data: [
         {
           key: '_payment_pending',
