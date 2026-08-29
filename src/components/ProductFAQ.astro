@@ -5,14 +5,45 @@ interface FAQ {
 }
 
 interface Props {
-  faqs: FAQ[];
+  faqs?: FAQ[];
   image?: string;
 }
 
 const { faqs = [], image } = Astro.props;
 
+// 默认 FAQ 数据（硬编码）
+const defaultFaqs: FAQ[] = [
+  {
+    question: "How easy is it to fold and store? What are the folded dimensions?",
+    answer: "It folds flat in just a few seconds with a simple one-touch mechanism. Once folded, it becomes super compact and can easily slide under a bed, fit into a car trunk, or slip into tight closet spaces."
+  },
+  {
+    question: "Does this product require assembly upon opening the box?",
+    answer: "No complicated installation required! It comes ready to use right out of the box—just unfold the nose plate and extend the handle to start moving immediately."
+  },
+  {
+    question: "Will the wheels scratch indoor wooden floors or make loud noise outdoors?",
+    answer: "No. Equipped with premium, wear-resistant TPR/PU quiet wheels, it ensures smooth and whisper-quiet rolling on both indoor hardwood floors and rough outdoor surfaces like concrete or asphalt without leaving marks."
+  },
+  {
+    question: "Do these products come with bungee cords or elastic straps?",
+    answer: "Yes! Most of our folding hand trucks come equipped with strong elastic bungee straps to securely anchor your boxes or cargo during transport, preventing tipping or slipping."
+  },
+  {
+    question: "How long does shipping take?",
+    answer: "Orders are processed within 24 hours. Fast nationwide delivery typically arrives within 3-7 business days directly from our local US warehouse."
+  },
+  {
+    question: "What is your warranty policy if a part breaks or if I'm not satisfied?",
+    answer: "We stand behind our quality with a 30-day risk-free return policy and structural warranty. If you encounter any performance or quality issues, contact our support team for a hassle-free replacement or assistance."
+  }
+];
+
+// 使用传入的 faqs 或默认 faqs
+const displayFaqs = faqs.length > 0 ? faqs : defaultFaqs;
+
 // 如果没有 FAQ 数据，不显示组件
-if (!faqs || faqs.length === 0) {
+if (!displayFaqs || displayFaqs.length === 0) {
   return null;
 }
 ---
@@ -30,7 +61,7 @@ if (!faqs || faqs.length === 0) {
       </div>
 
       <div class="faq-list">
-        {faqs.map((faq, index) => (
+        {displayFaqs.map((faq, index) => (
           <div class="faq-item" data-faq-item={index}>
             <button class="faq-question" data-faq-toggle>
               <h3>{faq.question}</h3>
