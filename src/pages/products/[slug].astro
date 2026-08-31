@@ -935,6 +935,14 @@ if (specifications.length === 0) {
                 </div>
               )}
 
+              {/* 独立的加载覆盖层 */}
+              <div class="model-loading-overlay" id="model-loading-overlay" style="display: none;">
+                <div class="loading-spinner"></div>
+                <div style="margin-top: 1rem; text-align: center;">
+                  <span id="switching-text">Switching model...</span>
+                </div>
+              </div>
+
               <div class="viewer-controls" id="viewer-controls-hint">
                 <div class="control-info">
                   <span>Drag to rotate • Scroll to zoom • Double-click to reset</span>
@@ -3146,14 +3154,27 @@ if (specifications.length === 0) {
     if (switchButtons.length > 0 && modelViewer) {
       const modelUrl1 = modelViewer.getAttribute('data-model-url-1');
       const modelUrl2 = modelViewer.getAttribute('data-model-url-2');
+      const loadingOverlay = document.getElementById('model-loading-overlay');
+      const switchingText = document.getElementById('switching-text');
 
       switchButtons.forEach(button => {
         button.addEventListener('click', () => {
           const modelIndex = button.getAttribute('data-model-index');
 
+          // 如果点击的是当前激活的按钮，不做任何操作
+          if (button.classList.contains('active')) {
+            return;
+          }
+
           // 更新按钮状态
           switchButtons.forEach(btn => btn.classList.remove('active'));
           button.classList.add('active');
+
+          // 显示加载覆盖层
+          if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+            if (switchingText) switchingText.textContent = `Loading Model ${modelIndex}...`;
+          }
 
           // 切换模型
           if (modelIndex === '1' && modelUrl1) {
@@ -3164,12 +3185,21 @@ if (specifications.length === 0) {
             console.log('Switched to Model 2');
           }
 
-          // 显示加载状态
+          // 显示原始 poster（如果存在）
           const poster = document.getElementById('model-poster');
           if (poster) poster.style.display = 'flex';
           if (loadingText) loadingText.textContent = 'Loading 3D Model...';
           if (loadingProgress) loadingProgress.textContent = '';
         });
+      });
+
+      // 监听模型加载完成，隐藏加载覆盖层
+      modelViewer.addEventListener('load', () => {
+        if (loadingOverlay) {
+          setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+          }, 500); // 延迟500ms以确保用户看到加载完成
+        }
       });
     }
   });
@@ -5227,6 +5257,32 @@ if (specifications.length === 0) {
     background: #d4af37;
     border-color: #d4af37;
     color: #fff;
+  }
+
+  /* 模型加载覆盖层 */
+  .model-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    color: white;
+  }
+
+  .model-loading-overlay .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(212, 175, 55, 0.2);
+    border-top-color: #d4af37;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
   }
 
   .viewer-loading {
