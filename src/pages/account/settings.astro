@@ -492,16 +492,34 @@ export const prerender = false;
     const newPassword = (document.getElementById('newPassword') as HTMLInputElement).value;
     const confirmPassword = (document.getElementById('confirmPassword') as HTMLInputElement).value;
 
+    // 清空之前的提示
+    passwordError!.style.display = 'none';
+    passwordError!.style.opacity = '0';
+
     // Validate
     if (newPassword !== confirmPassword) {
       passwordError!.textContent = 'New passwords do not match';
       passwordError!.style.display = 'block';
+      passwordError!.style.opacity = '1';
+
+      // 动画显示
+      gsap.fromTo(passwordError,
+        { y: -10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }
+      );
       return;
     }
 
     if (newPassword.length < 8) {
       passwordError!.textContent = 'Password must be at least 8 characters';
       passwordError!.style.display = 'block';
+      passwordError!.style.opacity = '1';
+
+      // 动画显示
+      gsap.fromTo(passwordError,
+        { y: -10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }
+      );
       return;
     }
 
@@ -519,6 +537,18 @@ export const prerender = false;
       const result = await response.json();
 
       if (response.ok && result.success) {
+        // 显示成功提示
+        passwordError!.textContent = '✓ Password updated successfully!';
+        passwordError!.className = 'password-success';
+        passwordError!.style.display = 'block';
+        passwordError!.style.opacity = '1';
+
+        // 动画显示
+        gsap.fromTo(passwordError,
+          { y: -10, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out' }
+        );
+
         submitBtn.textContent = '✓ Updated';
         submitBtn.style.background = '#10b981';
 
@@ -527,14 +557,27 @@ export const prerender = false;
           submitBtn.textContent = originalText;
           submitBtn.style.background = '';
           submitBtn.disabled = false;
-        }, 1500);
+          passwordError!.className = 'password-error';
+          passwordError!.style.display = 'none';
+        }, 2000);
       } else {
         throw new Error(result.error || 'Failed to update password');
       }
     } catch (error: any) {
       console.error('Password update error:', error);
       passwordError!.textContent = error.message || 'Failed to update password. Please try again.';
+      passwordError!.className = 'password-error';
       passwordError!.style.display = 'block';
+      passwordError!.style.opacity = '1';
+
+      // 动画显示并抖动
+      gsap.fromTo(passwordError,
+        { x: -10 },
+        { x: 10, duration: 0.1, repeat: 3, yoyo: true, ease: 'power2.inOut', onComplete: () => {
+          gsap.set(passwordError, { x: 0 });
+        }}
+      );
+
       submitBtn.textContent = originalText;
       submitBtn.disabled = false;
     }
@@ -945,13 +988,28 @@ export const prerender = false;
 
   .password-error {
     display: none;
-    padding: 0.875rem;
-    background: #fee;
-    border: 1px solid #fcc;
+    padding: 0.875rem 1rem;
+    background: #fee2e2;
+    border: 2px solid #ef4444;
     border-radius: 6px;
-    color: #c00;
+    color: #991b1b;
     font-size: 0.875rem;
+    font-weight: 700;
     margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  .password-success {
+    display: none;
+    padding: 0.875rem 1rem;
+    background: #d1fae5;
+    border: 2px solid #10b981;
+    border-radius: 6px;
+    color: #065f46;
+    font-size: 0.875rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   }
 
   .password-modal-actions {
