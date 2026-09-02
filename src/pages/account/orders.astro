@@ -88,6 +88,20 @@ export const prerender = false;
 
   let userId = 0;
 
+  // Fetch tracking info for an order
+  async function fetchOrderTracking(orderId: number) {
+    try {
+      const response = await fetch(`/api/account/tracking?order_id=${orderId}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.tracking || [];
+      }
+    } catch (error) {
+      console.error('Failed to fetch tracking:', error);
+    }
+    return [];
+  }
+
   // Check authentication
   async function checkAuth() {
     try {
@@ -129,7 +143,14 @@ export const prerender = false;
 
       if (ordersList) {
         if (data.orders && data.orders.length > 0) {
-          ordersList.innerHTML = data.orders.map((order: any) => {
+          // 批量获取所有订单的物流信息
+          const trackingPromises = data.orders.map((order: any) =>
+            fetchOrderTracking(order.id)
+          );
+          const trackingData = await Promise.all(trackingPromises);
+
+          ordersList.innerHTML = data.orders.map((order: any, index: number) => {
+            const hasTracking = trackingData[index] && trackingData[index].length > 0;
             const itemCount = order.line_items.reduce((sum: number, item: any) => sum + item.quantity, 0);
             const statusLabels: any = {
               'pending': 'Pending',
@@ -162,6 +183,7 @@ export const prerender = false;
 
                 <div class="order-col order-status-col">
                   <span class="order-status status-${order.status}">${statusLabels[order.status] || order.status}</span>
+                  ${hasTracking ? '<span class="shipped-badge">Shipped</span>' : ''}
                 </div>
 
                 <div class="order-col order-products-col">
@@ -185,15 +207,21 @@ export const prerender = false;
             `;
           }).join('');
 
-          // 存储订单数据供模态框使用
+          // 存储订单数据和物流数据供模态框使用
           (window as any).ordersData = data.orders;
+          (window as any).trackingData = trackingData;
 
           // 绑定点击事件
           document.querySelectorAll('[data-view-order]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
               const orderId = (e.currentTarget as HTMLElement).getAttribute('data-view-order');
               const order = (window as any).ordersData.find((o: any) => o.id.toString() === orderId);
-              if (order) showOrderModal(order);
+              if (order) {
+                // 获取该订单的物流信息
+                const orderIndex = (window as any).ordersData.findIndex((o: any) => o.id.toString() === orderId);
+                const tracking = (window as any).trackingData[orderIndex] || [];
+                showOrderModal(order, tracking);
+              }
             });
           });
 
@@ -226,7 +254,7 @@ export const prerender = false;
   }
 
   // 显示订单详情模态框
-  function showOrderModal(order: any) {
+  function showOrderModal(order: any, tracking: any[] = []) {
     const statusLabels: any = {
       'pending': 'Pending',
       'processing': 'Processing',
@@ -236,6 +264,40 @@ export const prerender = false;
       'refunded': 'Refunded',
       'failed': 'Failed'
     };
+
+    // 构建物流跟踪HTML
+    const trackingHTML = tracking && tracking.length > 0 ? `
+      <div class="modal-section">
+        <h3>📦 Shipment Tracking</h3>
+        <div class="tracking-items">
+          ${tracking.map((track: any, index: number) => `
+            <div class="tracking-item">
+              <div class="tracking-header">
+                <span class="tracking-label">Tracking #${index + 1}</span>
+                ${track.date_shipped ? `<span class="tracking-date">Shipped: ${typeof track.date_shipped === 'number' ? new Date(track.date_shipped * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : track.date_shipped}</span>` : ''}
+              </div>
+              <div class="tracking-details">
+                <div class="tracking-row">
+                  <span class="tracking-key">Carrier:</span>
+                  <span class="tracking-value"><strong>${track.tracking_provider || track.custom_tracking_provider || 'N/A'}</strong></span>
+                </div>
+                <div class="tracking-row">
+                  <span class="tracking-key">Tracking Number:</span>
+                  <span class="tracking-value tracking-number">${track.tracking_number || 'N/A'}</span>
+                </div>
+                ${track.tracking_link || track.custom_tracking_link ? `
+                  <div class="tracking-row">
+                    <a href="${track.tracking_link || track.custom_tracking_link}" target="_blank" rel="noopener" class="tracking-link">
+                      Track Package →
+                    </a>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    ` : '';
 
     const modalHTML = `
       <div class="order-modal-overlay" id="orderModal">
@@ -263,6 +325,8 @@ export const prerender = false;
                 </div>
               </div>
             </div>
+
+            ${trackingHTML}
 
             <div class="modal-section">
               <h3>Items</h3>
@@ -616,6 +680,26 @@ export const prerender = false;
     color: #6b21a8;
   }
 
+  .shipped-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: #10b981;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 4px;
+  }
+
+  .order-status-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
   .order-products-col {
     flex-direction: row;
     align-items: center;
@@ -840,6 +924,90 @@ export const prerender = false;
     color: #111;
   }
 
+  /* Tracking styles */
+  .tracking-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .tracking-item {
+    padding: 1rem;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+  }
+
+  .tracking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #bbf7d0;
+  }
+
+  .tracking-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #065f46;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .tracking-date {
+    font-size: 0.8125rem;
+    color: #059669;
+  }
+
+  .tracking-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .tracking-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .tracking-key {
+    font-size: 0.875rem;
+    color: #059669;
+    font-weight: 600;
+    min-width: 120px;
+  }
+
+  .tracking-value {
+    font-size: 0.875rem;
+    color: #065f46;
+  }
+
+  .tracking-number {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #047857;
+  }
+
+  .tracking-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: #10b981;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .tracking-link:hover {
+    background: #059669;
+  }
+
   .modal-totals {
     margin-top: 2rem;
     padding-top: 1.5rem;
@@ -987,6 +1155,40 @@ export const prerender = false;
       grid-template-columns: 1fr;
       gap: 1rem;
     }
+
+    /* 移动端物流信息优化 */
+    .tracking-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+
+    .tracking-key {
+      min-width: auto;
+      font-size: 0.75rem;
+    }
+
+    .tracking-value {
+      font-size: 0.8125rem;
+      width: 100%;
+      word-break: break-all;
+    }
+
+    .tracking-number {
+      font-size: 0.8125rem;
+      word-break: break-all;
+    }
+
+    .tracking-link {
+      width: 100%;
+      justify-content: center;
+      margin-top: 0.25rem;
+    }
+
+    .shipped-badge {
+      font-size: 0.6rem;
+      padding: 0.2rem 0.4rem;
+    }
   }
 
   @media (max-width: 480px) {
@@ -1009,6 +1211,25 @@ export const prerender = false;
     .modal-item img {
       width: 50px;
       height: 50px;
+    }
+
+    /* 移动端物流信息进一步优化 */
+    .tracking-item {
+      padding: 0.75rem;
+    }
+
+    .tracking-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+
+    .tracking-label {
+      font-size: 0.75rem;
+    }
+
+    .tracking-date {
+      font-size: 0.75rem;
     }
   }
 </style>

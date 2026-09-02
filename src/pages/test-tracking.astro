@@ -1,0 +1,422 @@
+---
+/**
+ * 测试页面：获取 WooCommerce 订单的物流跟踪信息
+ *
+ * 使用 Shipment Tracking for WooCommerce 插件的 REST API
+ * API 端点：/wp-json/wc-shipment-tracking/v3/orders/<order_id>/shipment-trackings
+ *
+ * 测试方法：
+ * 访问 /test-tracking?order_id=你的订单ID
+ */
+
+export const prerender = false;
+
+const WOOCOMMERCE_URL = import.meta.env.WOOCOMMERCE_URL;
+const CONSUMER_KEY = import.meta.env.WOOCOMMERCE_CONSUMER_KEY;
+const CONSUMER_SECRET = import.meta.env.WOOCOMMERCE_CONSUMER_SECRET;
+
+// 从 URL 获取订单 ID
+const orderId = Astro.url.searchParams.get('order_id');
+
+let orderData = null;
+let trackingItems = null;
+let error = null;
+let apiMethod = '';
+
+if (orderId) {
+  try {
+    // 方法1: 使用 Shipment Tracking 专用 API (推荐)
+    console.log('🔍 尝试方法1: Shipment Tracking REST API');
+    const trackingResponse = await fetch(
+      `${WOOCOMMERCE_URL}/wp-json/wc-shipment-tracking/v3/orders/${orderId}/shipment-trackings`,
+      {
+        headers: {
+          'Authorization': `Basic ${btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`)}`,
+        },
+      }
+    );
+
+    if (trackingResponse.ok) {
+      trackingItems = await trackingResponse.json();
+      apiMethod = 'Shipment Tracking REST API (推荐方法)';
+      console.log('✅ 方法1成功:', trackingItems);
+    } else {
+      console.log('⚠️ 方法1失败，尝试方法2');
+
+      // 方法2: 从订单 meta_data 中读取 (备用方法)
+      const orderResponse = await fetch(
+        `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}`,
+        {
+          headers: {
+            'Authorization': `Basic ${btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`)}`,
+          },
+        }
+      );
+
+      if (orderResponse.ok) {
+        orderData = await orderResponse.json();
+
+        // 查找物流跟踪信息在 meta_data 中
+        const trackingMeta = orderData.meta_data?.find(
+          (meta: any) => meta.key === '_wc_shipment_tracking_items'
+        );
+
+        if (trackingMeta && trackingMeta.value) {
+          trackingItems = Array.isArray(trackingMeta.value) ? trackingMeta.value : [trackingMeta.value];
+          apiMethod = '订单 meta_data (备用方法)';
+          console.log('✅ 方法2成功:', trackingItems);
+        }
+      } else {
+        error = `API 请求失败: ${orderResponse.status} ${orderResponse.statusText}`;
+      }
+    }
+
+    // 如果还没有获取订单基本信息，现在获取
+    if (!orderData) {
+      const orderResponse = await fetch(
+        `${WOOCOMMERCE_URL}/wp-json/wc/v3/orders/${orderId}`,
+        {
+          headers: {
+            'Authorization': `Basic ${btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`)}`,
+          },
+        }
+      );
+
+      if (orderResponse.ok) {
+        orderData = await orderResponse.json();
+      }
+    }
+  } catch (e: any) {
+    error = `错误: ${e.message}`;
+  }
+}
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>物流跟踪信息测试</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #d4af37;
+    }
+
+    .input-group {
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #555;
+    }
+
+    input {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.75rem;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      background: #d4af37;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 1rem;
+    }
+
+    button:hover {
+      background: #c49d2e;
+    }
+
+    .section {
+      margin-bottom: 2rem;
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .info-box {
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      border-left: 4px solid #d4af37;
+    }
+
+    .error-box {
+      background: #fee;
+      padding: 1rem;
+      border-radius: 4px;
+      border-left: 4px solid #e53e3e;
+      color: #c53030;
+    }
+
+    .success-box {
+      background: #d1fae5;
+      padding: 1rem;
+      border-radius: 4px;
+      border-left: 4px solid #10b981;
+      color: #065f46;
+    }
+
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .tracking-item {
+      background: white;
+      padding: 1rem;
+      border: 2px solid #d4af37;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .tracking-item h3 {
+      color: #d4af37;
+      margin-bottom: 0.5rem;
+    }
+
+    .tracking-detail {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .tracking-label {
+      font-weight: 600;
+      color: #555;
+    }
+
+    .tracking-value {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚚 物流跟踪信息测试</h1>
+
+    <div class="section">
+      <div class="input-group">
+        <form method="get">
+          <label for="order_id">输入订单 ID：</label>
+          <input
+            type="text"
+            id="order_id"
+            name="order_id"
+            value={orderId || ''}
+            placeholder="例如: 12345"
+            required
+          />
+          <button type="submit">查询</button>
+        </form>
+      </div>
+    </div>
+
+    {error && (
+      <div class="error-box">
+        <strong>错误：</strong> {error}
+      </div>
+    )}
+
+    {orderData && (
+      <>
+        <div class="section">
+          <div class="section-title">订单基本信息</div>
+          <div class="info-box">
+            <div class="tracking-detail">
+              <span class="tracking-label">订单号:</span>
+              <span class="tracking-value">#{orderData.id}</span>
+
+              <span class="tracking-label">订单状态:</span>
+              <span class="tracking-value">{orderData.status}</span>
+
+              <span class="tracking-label">创建时间:</span>
+              <span class="tracking-value">{new Date(orderData.date_created).toLocaleString('zh-CN')}</span>
+
+              <span class="tracking-label">客户:</span>
+              <span class="tracking-value">{orderData.billing?.first_name} {orderData.billing?.last_name}</span>
+
+              {apiMethod && (
+                <>
+                  <span class="tracking-label">获取方式:</span>
+                  <span class="tracking-value" style="color: #10b981; font-weight: 600;">{apiMethod}</span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {trackingItems && trackingItems.length > 0 ? (
+          <div class="section">
+            <div class="section-title">✅ 物流跟踪信息 ({trackingItems.length} 条记录)</div>
+
+            {trackingItems.map((tracking: any, index: number) => (
+              <div class="tracking-item">
+                <h3>📦 跟踪记录 #{index + 1}</h3>
+                <div class="tracking-detail">
+                  {tracking.tracking_provider && (
+                    <>
+                      <span class="tracking-label">物流商:</span>
+                      <span class="tracking-value"><strong>{tracking.tracking_provider}</strong></span>
+                    </>
+                  )}
+
+                  {tracking.tracking_number && (
+                    <>
+                      <span class="tracking-label">跟踪单号:</span>
+                      <span class="tracking-value" style="font-family: monospace; font-size: 1.1em; color: #d4af37;">
+                        <strong>{tracking.tracking_number}</strong>
+                      </span>
+                    </>
+                  )}
+
+                  {tracking.tracking_link && (
+                    <>
+                      <span class="tracking-label">跟踪链接:</span>
+                      <span class="tracking-value">
+                        <a href={tracking.tracking_link} target="_blank" rel="noopener" style="color: #2563eb; text-decoration: underline;">
+                          点击查看物流详情 →
+                        </a>
+                      </span>
+                    </>
+                  )}
+
+                  {tracking.date_shipped && (
+                    <>
+                      <span class="tracking-label">发货时间:</span>
+                      <span class="tracking-value">
+                        {typeof tracking.date_shipped === 'number'
+                          ? new Date(tracking.date_shipped * 1000).toLocaleString('zh-CN')
+                          : tracking.date_shipped
+                        }
+                      </span>
+                    </>
+                  )}
+
+                  {tracking.tracking_id && (
+                    <>
+                      <span class="tracking-label">跟踪ID:</span>
+                      <span class="tracking-value" style="font-family: monospace; font-size: 0.85em; color: #666;">
+                        {tracking.tracking_id}
+                      </span>
+                    </>
+                  )}
+
+                  {tracking.custom_tracking_provider && (
+                    <>
+                      <span class="tracking-label">自定义物流商:</span>
+                      <span class="tracking-value">{tracking.custom_tracking_provider}</span>
+                    </>
+                  )}
+
+                  {tracking.custom_tracking_link && (
+                    <>
+                      <span class="tracking-label">自定义跟踪链接:</span>
+                      <span class="tracking-value">
+                        <a href={tracking.custom_tracking_link} target="_blank" rel="noopener" style="color: #2563eb; text-decoration: underline;">
+                          {tracking.custom_tracking_link}
+                        </a>
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <details style="margin-top: 1rem;">
+                  <summary style="cursor: pointer; font-size: 0.9em; color: #666;">查看原始数据</summary>
+                  <pre style="margin-top: 0.5rem; font-size: 0.85em;">{JSON.stringify(tracking, null, 2)}</pre>
+                </details>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="section">
+            <div class="info-box">
+              <strong>ℹ️ 暂无物流跟踪信息</strong>
+              <p>此订单还没有添加物流跟踪信息。</p>
+              <p style="margin-top: 0.5rem; font-size: 0.9em; color: #666;">
+                请在 WordPress 后台使用 Shipment Tracking 插件为订单添加跟踪信息。
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div class="section">
+          <div class="section-title">🔧 API 测试信息</div>
+          <div class="info-box">
+            <p><strong>API 端点 (推荐):</strong></p>
+            <pre style="background: #f0f0f0; padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0; color: #333;">
+GET {WOOCOMMERCE_URL}/wp-json/wc-shipment-tracking/v3/orders/{orderId}/shipment-trackings</pre>
+
+            <p style="margin-top: 1rem;"><strong>备用端点:</strong></p>
+            <pre style="background: #f0f0f0; padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0; color: #333;">
+GET {WOOCOMMERCE_URL}/wp-json/wc/v3/orders/{orderId}
+→ 查找 meta_data 中的 _wc_shipment_tracking_items</pre>
+          </div>
+        </div>
+      </>
+    )}
+
+    {!orderId && (
+      <div class="info-box">
+        <p><strong>使用说明：</strong></p>
+        <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+          <li>输入一个已存在的订单 ID</li>
+          <li>点击"查询"按钮</li>
+          <li>查看订单的物流跟踪信息</li>
+          <li>如果没有显示跟踪信息，请在 WordPress 后台为订单添加跟踪信息后再测试</li>
+        </ol>
+      </div>
+    )}
+  </div>
+</body>
+</html>

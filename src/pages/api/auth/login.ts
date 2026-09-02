@@ -17,8 +17,41 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
+    // 检测是否为邮箱格式
+    const isEmail = username.includes('@');
+
+    // 如果是邮箱，先通过WooCommerce API查找用户名
+    let actualUsername = username;
+
+    if (isEmail) {
+      console.log('Email login detected, looking up username for:', username);
+
+      try {
+        // 使用WooCommerce API通过邮箱查找客户
+        const customerResponse = await fetch(
+          `${WOOCOMMERCE_URL}/wp-json/wc/v3/customers?email=${encodeURIComponent(username)}&consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`
+        );
+
+        if (customerResponse.ok) {
+          const customers = await customerResponse.json();
+          if (customers && customers.length > 0) {
+            actualUsername = customers[0].username;
+            console.log('Found username for email:', actualUsername);
+          } else {
+            return new Response(
+              JSON.stringify({ error: 'No account found with this email' }),
+              { status: 401, headers: { 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      } catch (e) {
+        console.error('Failed to lookup username by email:', e);
+        // 继续尝试使用邮箱登录，某些JWT插件支持邮箱
+      }
+    }
+
     // 使用JWT Authentication插件验证用户
-    console.log('Attempting JWT login for user:', username);
+    console.log('Attempting JWT login for user:', actualUsername);
     console.log('JWT endpoint:', `${WOOCOMMERCE_URL}/wp-json/api/v1/token`);
 
     const jwtResponse = await fetch(
@@ -28,7 +61,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username: actualUsername, password })
       }
     );
 
