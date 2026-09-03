@@ -180,49 +180,25 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
           autoCreatedAccount = true;
           console.log('✅ 账户创建成功，客户 ID:', customerId);
 
-          // 7d. 自动登录用户（使用 JWT）
-          try {
-            const jwtResponse = await fetch(`${env.WOOCOMMERCE_URL}/wp-json/api/v1/token`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username, password: randomPassword }),
-            });
+          // 7d. 直接创建session（与现有用户逻辑一致，不依赖JWT插件）
+          const sessionToken = btoa(JSON.stringify({
+            userId: customer.id,
+            username: username,
+            email: billing.email,
+            firstName: billing.first_name,
+            lastName: billing.last_name,
+            verified: true, // 通过支付验证
+          }));
 
-            if (jwtResponse.ok) {
-              const jwtData = await jwtResponse.json();
-              const jwtToken = jwtData.jwt_token || jwtData.token;
+          cookies.set('woo_session', sessionToken, {
+            path: '/',
+            httpOnly: true,
+            secure: import.meta.env.PROD,
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7, // 7 天
+          });
 
-              if (jwtToken) {
-                // 解码 JWT token（获取过期时间等信息）
-                const tokenParts = jwtToken.split('.');
-                const payload = JSON.parse(atob(tokenParts[1]));
-
-                // 创建 session token
-                const sessionToken = btoa(JSON.stringify({
-                  userId: customer.id,
-                  username: username,
-                  token: jwtToken,
-                  email: billing.email,
-                  firstName: billing.first_name,
-                  lastName: billing.last_name,
-                }));
-
-                // 设置 session cookie
-                cookies.set('woo_session', sessionToken, {
-                  path: '/',
-                  httpOnly: true,
-                  secure: import.meta.env.PROD,
-                  sameSite: 'lax',
-                  maxAge: 60 * 60 * 24 * 7, // 7 天
-                });
-
-                console.log('✅ 用户自动登录成功');
-              }
-            }
-          } catch (loginError) {
-            console.error('⚠️ 自动登录失败:', loginError);
-            // 继续处理订单，即使自动登录失败
-          }
+          console.log('✅ 新用户自动登录成功');
         } else {
           // 客户可能已存在（邮箱重复），尝试通过邮箱查找
           const errorData = await customerResponse.json();

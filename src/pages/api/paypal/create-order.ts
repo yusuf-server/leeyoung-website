@@ -185,42 +185,25 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
           autoCreatedAccount = true;
           console.log('✅ 账户创建成功，客户 ID:', customerId);
 
-          // 自动登录（与 Stripe 相同逻辑）
-          try {
-            const jwtResponse = await fetch(`${env.WOOCOMMERCE_URL}/wp-json/api/v1/token`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username, password: randomPassword }),
-            });
+          // 直接创建session（与现有用户逻辑一致，不依赖JWT插件）
+          const sessionToken = btoa(JSON.stringify({
+            userId: customer.id,
+            username: username,
+            email: billing.email,
+            firstName: billing.first_name,
+            lastName: billing.last_name,
+            verified: true, // 通过支付验证
+          }));
 
-            if (jwtResponse.ok) {
-              const jwtData = await jwtResponse.json();
-              const jwtToken = jwtData.jwt_token || jwtData.token;
+          cookies.set('woo_session', sessionToken, {
+            path: '/',
+            httpOnly: true,
+            secure: import.meta.env.PROD,
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 7,
+          });
 
-              if (jwtToken) {
-                const sessionToken = btoa(JSON.stringify({
-                  userId: customer.id,
-                  username: username,
-                  token: jwtToken,
-                  email: billing.email,
-                  firstName: billing.first_name,
-                  lastName: billing.last_name,
-                }));
-
-                cookies.set('woo_session', sessionToken, {
-                  path: '/',
-                  httpOnly: true,
-                  secure: import.meta.env.PROD,
-                  sameSite: 'lax',
-                  maxAge: 60 * 60 * 24 * 7,
-                });
-
-                console.log('✅ 用户自动登录成功');
-              }
-            }
-          } catch (loginError) {
-            console.error('⚠️ 自动登录失败:', loginError);
-          }
+          console.log('✅ 新用户自动登录成功');
         } else {
           // 邮箱已存在，查找现有客户
           const errorData = await customerResponse.json();
